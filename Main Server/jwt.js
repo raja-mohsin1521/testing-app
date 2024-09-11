@@ -6,7 +6,7 @@ const generateToken = (user) => {
   return jwt.sign(
     { id: user.id, email: user.email },
     secretKey,
-    { expiresIn: "1h" }
+    { expiresIn: "999y" }
   );
 };
 
