@@ -7,14 +7,12 @@ const RequestsTable = (props) => {
     <TableContainer>
       <StyledTable>
         <Row className='d-md-none px-3 py-3 heading'>
-            <h3>
-            {props.tablehead}
-            </h3>
+          <h3>{props.tablehead}</h3>
         </Row>
         <thead>
           <tr>
             <th className='main' colSpan="6">
-              <h3>{props.tablehead}</h3> 
+              <h3>{props.tablehead}</h3>
             </th>
           </tr>
           <tr>
@@ -23,23 +21,31 @@ const RequestsTable = (props) => {
             <th>Test Center</th>
             <th>Subject</th>
             <th>Date</th>
-            <th>Request</th>
+            <th colSpan={2}>Request</th>
           </tr>
         </thead>
         <tbody>
-          {props.requests.map((request, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{request.testName}</td>
-              <td>{request.testCenter}</td>
-              <td>{request.subject}</td>
-              <td>{request.date}</td>
-              <td>
-                <Button variant="success" className="me-2">Accept</Button>
-                <Button variant="danger">Reject</Button>
+          {props.requests.length === 0 ? (
+            <tr>
+              <td colSpan="6">
+                <NoDataMessage>No new requests found</NoDataMessage>
               </td>
             </tr>
-          ))}
+          ) : (
+            props.requests.map((request, index) => (
+              <tr key={index}>
+                <td>{index + 1}</td>
+                <td>{request.testName}</td>
+                <td>{request.testCenter}</td>
+                <td>{request.subject}</td>
+                <td>{request.date}</td>
+                <td colSpan={2}>
+                  <Button variant="success" className="my-2">Accept</Button>
+                  <Button variant="danger">Decline</Button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </StyledTable>
     </TableContainer>
@@ -59,9 +65,12 @@ const StyledTable = styled(Table)`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow effect */
   width: 100%; /* Ensure the table takes full width */
   max-width: 1000px; /* Limit the maximum width of the table */
-.heading{
-background-color: #343a40;
-color:#ffc107;}
+  
+  .heading {
+    background-color: #343a40;
+    color: #ffc107;
+  }
+  
   th, td {
     text-align: center; /* Center text horizontally */
     vertical-align: middle; /* Center text vertically */
@@ -130,6 +139,13 @@ color:#ffc107;}
       text-align: left; /* Align label to the left */
     }
   }
+`;
+
+const NoDataMessage = styled.div`
+  text-align: center;
+  font-size: 18px;
+  color: #6c757d;
+  padding: 20px;
 `;
 
 export default RequestsTable;

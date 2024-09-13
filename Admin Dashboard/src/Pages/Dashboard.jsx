@@ -2,9 +2,10 @@ import React from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import styled from "styled-components";
 
-import ScoreCards from "./ScoreCard";
-import StaticsCard from "./StaticsCard";
-import RequestsTable from "./MainPageTable";
+import ScoreCards from "../Components/ScoreCard";
+import StaticsCard from "../Components/StaticsCard";
+import RequestsTable from "../Components/MainPageTable";
+
 
 function Dashboard() {
   const studentStats = [
@@ -45,6 +46,7 @@ function Dashboard() {
   ];
 
   return (
+    <>
     <DashboardPage>
       <Container fluid>
         <Row>
@@ -65,12 +67,13 @@ function Dashboard() {
         </Row>
 
         <Row className="mt-5">
+        <Col className="my-3" md={4} xs={12}>
+            <StaticsCard heading="Teachers" stats={teacherStats} link="/teachers" />
+          </Col>
           <Col className="my-3" md={4} xs={12}>
             <StaticsCard heading="Students" stats={studentStats} link="/students" />
           </Col>
-          <Col className="my-3" md={4} xs={12}>
-            <StaticsCard heading="Teachers" stats={teacherStats} link="/teachers" />
-          </Col>
+        
           <Col className="my-3" md={4} xs={12}>
             <StaticsCard heading="Test Centers" stats={testCenterStats} link="/test-centers" />
           </Col>
@@ -87,8 +90,17 @@ function Dashboard() {
             <RequestsTable tablehead="Paper Request List" requests={requestData} />
           </Col>
         </Row>
+        <Row className="mt-5">
+          <Col>
+            <RequestsTable tablehead="Result Submittion Request List" requests={requestData} />
+          </Col>
+        </Row>
+       
       </Container>
+    
     </DashboardPage>
+    
+</>
   );
 }
 

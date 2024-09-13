@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Nav } from 'react-bootstrap';
-import { Link, useLocation } from 'react-router-dom';
+import { Button, Col, Row, Nav  } from 'react-bootstrap';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaBars } from 'react-icons/fa';
 
@@ -15,10 +15,10 @@ const SidebarContainer = styled.div`
   position: relative;
 
   @media (max-width: 745px) {
-    position: absolute; /* Make sidebar float over content */
+    position: absolute;
     top: 0;
-    left: ${(props) => (props.open ? '0' : '-200px')}; /* Slide in/out on small screens */
-    z-index: 2; /* Ensure it floats above content */
+    left: ${(props) => (props.open ? '0' : '-200px')};
+    z-index: 2;
   }
 `;
 
@@ -27,7 +27,7 @@ const ToggleButton = styled.button`
   top: 300px;
   left: ${(props) => (props.open ? '180px' : '0')};
   background-color: #343a40;
-  z-index: 3; /* Ensure button is above other content */
+  z-index: 3;
   border: none;
   color: white;
   padding: 10px;
@@ -39,7 +39,7 @@ const ToggleButton = styled.button`
   }
 
   @media (min-width: 746px) {
-    display: none; /* Hide toggle button on larger screens */
+    display: none;
   }
 `;
 
@@ -47,6 +47,7 @@ const StyledNav = styled(Nav)`
   flex-direction: column;
   height: 100%;
   padding-top: 60px;
+  flex-grow: 1; /* Allows the navigation content to grow */
 `;
 
 const StyledNavLink = styled(Link)`
@@ -60,10 +61,19 @@ const StyledNavLink = styled(Link)`
   }
 `;
 
+const BottomButtonRow = styled(Row)`
+  margin-top: auto; /* Push the button to the bottom */
+  padding-bottom: 20px;
+`;
+
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
-
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    
+    navigate('/login'); 
+  };
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
@@ -75,43 +85,37 @@ const Sidebar = () => {
       </ToggleButton>
       <SidebarContainer open={isOpen}>
         <StyledNav>
-          <h3 className="text-white mb-5 mx-3">Admin Panel</h3>
-          <StyledNavLink
-            to="/"
-            active={location.pathname === '/'}
-          >
+          <h3 className="text-white  mx-3">Admin Panel</h3>
+          <StyledNavLink to="/" active={location.pathname === '/'}>
             Dashboard
           </StyledNavLink>
-          <StyledNavLink
-            to="/test-centers"
-            active={location.pathname === '/test-centers'}
-          >
+          <StyledNavLink to="/test-centers" active={location.pathname === '/test-centers'}>
             Test Centers
           </StyledNavLink>
-          <StyledNavLink
-            to="/students"
-            active={location.pathname === '/students'}
-          >
+          <StyledNavLink to="/students" active={location.pathname === '/students'}>
             Students
           </StyledNavLink>
-          <StyledNavLink
-            to="/teachers"
-            active={location.pathname === '/teachers'}
-          >
+          <StyledNavLink to="/teachers" active={location.pathname === '/teachers'}>
             Teachers
           </StyledNavLink>
-          <StyledNavLink
-            to="/scheduled-tests"
-            active={location.pathname === '/scheduled-tests'}
-          >
+          <StyledNavLink to="/scheduled-tests" active={location.pathname === '/scheduled-tests'}>
             Scheduled Tests
           </StyledNavLink>
-          <StyledNavLink
-            to="/papers"
-            active={location.pathname === '/papers'}
-          >
+          <StyledNavLink to="/papers" active={location.pathname === '/papers'}>
             Papers
           </StyledNavLink>
+          <StyledNavLink to="/requests" active={location.pathname === '/requests'}>
+            Requests
+          </StyledNavLink>
+          <StyledNavLink to="/complains" active={location.pathname === '/complains'}>
+            Complains
+          </StyledNavLink>
+
+          <BottomButtonRow className="text-center">
+            <Col>
+              <Button className="btn-dark w-50 " onClick={handleLogout} >Logout</Button>
+            </Col>
+          </BottomButtonRow>
         </StyledNav>
       </SidebarContainer>
     </>
