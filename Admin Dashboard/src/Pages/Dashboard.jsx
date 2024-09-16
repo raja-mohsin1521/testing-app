@@ -1,52 +1,96 @@
-import React from "react";
-import { Col, Container, Row } from "react-bootstrap";
-import styled from "styled-components";
+// src/Pages/Dashboard.jsx
+import React from 'react';
+import { Col, Container, Row } from 'react-bootstrap';
+import styled from 'styled-components';
 
-import ScoreCards from "../Components/ScoreCard";
-import StaticsCard from "../Components/StaticsCard";
-import RequestsTable from "../Components/MainPageTable";
-
+import ScoreCardSkeleton from '../Skeleton/ScoreCardSkeleton';
+import StaticsCardSkeleton from '../Skeleton/StaticsCardSkeleton';
+import RequestsTableSkeleton from '../Skeleton/RequestsTableSkeleton';
+import ScoreCards from '../Components/ScoreCard';
+import StaticsCard from '../Components/StaticsCard';
+import RequestsTable from '../Components/MainPageTable';
+import useDashboard from '../Hooks/useDashboard';
 
 function Dashboard() {
+  const { dashboard, loading, error } = useDashboard(); // Call the hook here
+
+  if (loading) {
+    return (
+      <DashboardPage>
+        <Container fluid>
+          <Row>
+            <Col className="my-3" md={4} xs={12}>
+              <ScoreCardSkeleton />
+            </Col>
+            <Col className="my-3" md={4} xs={12}>
+              <ScoreCardSkeleton />
+            </Col>
+            <Col className="my-3" md={4} xs={12}>
+              <ScoreCardSkeleton />
+            </Col>
+          </Row>
+
+          <Row className="mt-5">
+            <Col className="my-3" md={4} xs={12}>
+              <StaticsCardSkeleton />
+            </Col>
+            <Col className="my-3" md={4} xs={12}>
+              <StaticsCardSkeleton />
+            </Col>
+            <Col className="my-3" md={4} xs={12}>
+              <StaticsCardSkeleton />
+            </Col>
+          </Row>
+
+          <Row className="mt-5">
+            <Col>
+              <RequestsTableSkeleton />
+            </Col>
+          </Row>
+
+          <Row className="mt-5">
+            <Col>
+              <RequestsTableSkeleton />
+            </Col>
+          </Row>
+          
+          <Row className="mt-5">
+            <Col>
+              <RequestsTableSkeleton />
+            </Col>
+          </Row>
+        </Container>
+      </DashboardPage>
+    );
+  }
+
+  if (error) {
+    return <div>Error fetching data!</div>; // Handle the error state
+  }
+
   const studentStats = [
-    { name: "Total Students", value: "500" },
-    { name: "Verified Students", value: "400" },
-    { name: "Pending Verification", value: "40" },
-    { name: "Canceled Students", value: "40" },
-    { name: "Enrolled For Test", value: "40" },
+    { name: "Total Students", value: dashboard.totalStudents },
+    { name: "Verified Students", value: dashboard.verifiedStudents },
+    { name: "Pending Verification", value: dashboard.pendingVerification },
+    { name: "Canceled Students", value: dashboard.canceledStudents },
+    { name: "Enrolled For Test", value: dashboard.centersEnrolled },
   ];
 
   const teacherStats = [
-    { name: "Total Teachers", value: "100" },
-    { name: "Total Questions", value: "100" },
-    { name: "Added Questions", value: "100" },
-    { name: "Remaining Questions", value: "100" },
+    { name: "Total Teachers", value: dashboard.totalTeachers },
+    { name: "Total Questions", value: dashboard.totalQuestions },
+    { name: "Added Questions", value: dashboard.addedQuestions },
+    { name: "Remaining Questions", value: dashboard.remainingQuestions },
   ];
 
   const testCenterStats = [
-    { name: "Total Centers", value: "10" },
-    { name: "Booked Upcoming", value: "3" },
-    { name: "Booked Today", value: "1" },
-    { name: "Standby", value: "6" },
-  ];
-
-  const requestData = [
-    { testName: "Nut 1", testCenter: "Center A", subject: "Math", date: "2024-19-10" },
-    { testName: "Apptitude Test", testCenter: "Center B", subject: "Science", date: "2024-29-12" },
-    { testName: "History Test", testCenter: "Center C", subject: "History", date: "2024-19-15" },
-    { testName: "Nut 1", testCenter: "Center A", subject: "Math", date: "2024-19-10" },
-    { testName: "Apptitude Test", testCenter: "Center B", subject: "Science", date: "2024-29-12" },
-    { testName: "History Test", testCenter: "Center C", subject: "History", date: "2024-19-15" },
-    { testName: "Nut 1", testCenter: "Center A", subject: "Math", date: "2024-19-10" },
-    { testName: "Apptitude Test", testCenter: "Center B", subject: "Science", date: "2024-29-12" },
-    { testName: "History Test", testCenter: "Center C", subject: "History", date: "2024-19-15" },
-    { testName: "Nut 1", testCenter: "Center A", subject: "Math", date: "2024-19-10" },
-    { testName: "Apptitude Test", testCenter: "Center B", subject: "Science", date: "2024-29-12" },
-    { testName: "History Test", testCenter: "Center C", subject: "History", date: "2024-19-15" },
+    { name: "Total Centers", value: dashboard.totalTestCenters },
+    { name: "Booked Upcoming", value: dashboard.upcomingTests },
+    { name: "Booked Today", value: dashboard.todayTests },
+    { name: "Standby", value: dashboard.totalTests - (dashboard.upcomingTests + dashboard.todayTests) },
   ];
 
   return (
-    <>
     <DashboardPage>
       <Container fluid>
         <Row>
@@ -56,24 +100,23 @@ function Dashboard() {
         </Row>
         <Row>
           <Col className="my-3" md={4} xs={12}>
-            <ScoreCards heading="Total Tests" number="10" />
+            <ScoreCards heading="Total Tests" number={dashboard.totalTests} />
           </Col>
           <Col className="my-3" md={4} xs={12}>
-            <ScoreCards heading="Upcoming Tests" number="50" />
+            <ScoreCards heading="Upcoming Tests" number={dashboard.upcomingTests} />
           </Col>
           <Col className="my-3" md={4} xs={12}>
-            <ScoreCards heading="Today's Tests" number="3" />
+            <ScoreCards heading="Today's Tests" number={dashboard.todayTests} />
           </Col>
         </Row>
 
         <Row className="mt-5">
-        <Col className="my-3" md={4} xs={12}>
+          <Col className="my-3" md={4} xs={12}>
             <StaticsCard heading="Teachers" stats={teacherStats} link="/teachers" />
           </Col>
           <Col className="my-3" md={4} xs={12}>
             <StaticsCard heading="Students" stats={studentStats} link="/students" />
           </Col>
-        
           <Col className="my-3" md={4} xs={12}>
             <StaticsCard heading="Test Centers" stats={testCenterStats} link="/test-centers" />
           </Col>
@@ -81,26 +124,22 @@ function Dashboard() {
 
         <Row className="mt-5">
           <Col>
-            <RequestsTable tablehead="Students Request List" requests={requestData} />
+            <RequestsTable tablehead="Students Request List" requests={dashboard.studentRequests} />
           </Col>
         </Row>
 
         <Row className="mt-5">
           <Col>
-            <RequestsTable tablehead="Paper Request List" requests={requestData} />
+            <RequestsTable tablehead="Paper Request List" requests={dashboard.paperRequests} />
           </Col>
         </Row>
         <Row className="mt-5">
           <Col>
-            <RequestsTable tablehead="Result Submittion Request List" requests={requestData} />
+            <RequestsTable tablehead="Result Submission Request List" requests={dashboard.resultRequests} />
           </Col>
         </Row>
-       
       </Container>
-    
     </DashboardPage>
-    
-</>
   );
 }
 

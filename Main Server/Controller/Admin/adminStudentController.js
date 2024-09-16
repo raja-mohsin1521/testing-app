@@ -1,5 +1,5 @@
 const pool = require("../../db_Connection/db");
-const { generateToken } = require("../../jwt");
+
 const excelToJson = require("convert-excel-to-json");
 const fs = require("fs");
 
@@ -10,13 +10,13 @@ const registerStudentsFromExcel = async (req, res) => {
     }
 
     const excelFilePath = req.file.path;
-    const sheetName = req.body.sheetName;  // Get the sheet name from the request
+    const sheetName = req.body.sheetName;  
 
     const result = excelToJson({
       sourceFile: excelFilePath,
       sheets: [
         {
-          name: sheetName, // Use dynamic sheet name from the request
+          name: sheetName, 
           header: {
             rows: 1,
           },
@@ -33,7 +33,7 @@ const registerStudentsFromExcel = async (req, res) => {
     });
 
     const students = result[sheetName];
-    const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+    const currentDate = new Date().toISOString().split('T')[0]; 
 
     for (const student of students) {
       await pool.query(
@@ -45,7 +45,7 @@ const registerStudentsFromExcel = async (req, res) => {
           student.dateOfBirth,
           student.phone,
           student.address,
-          currentDate, // Use current date for EnrollmentDate
+          currentDate, 
         ]
       );
     }
@@ -70,7 +70,7 @@ const getAllStudents = async (req, res) => {
 
 const updateStudent = async (req, res) => {
   const { studentID, name, email, password, dateOfBirth, phone, address } = req.body;
-  const currentDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+  const currentDate = new Date().toISOString().split('T')[0]; 
 
   try {
     const result = await pool.query(

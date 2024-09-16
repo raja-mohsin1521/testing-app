@@ -1,7 +1,7 @@
 // src/pages/Teachers.js
 import React, { useState } from 'react';
 import { Button, Col, Container, Row } from 'react-bootstrap';
-import TeachersTable from '../Components/TeachersTable';
+
 import TeacherForm from '../Components/TeacherForm';
 import styled from 'styled-components';
 
@@ -25,11 +25,11 @@ const Teachers = () => {
         </Col>
       </Row>
       <hr/>
-      <Row className='mt-5'>
+      {/* <Row className='mt-5'>
         <Col>
           <TeachersTable />
         </Col>
-      </Row>
+      </Row> */}
     </FullHeightContainer>
   );
 };

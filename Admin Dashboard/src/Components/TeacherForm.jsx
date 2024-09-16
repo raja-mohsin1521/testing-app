@@ -1,9 +1,9 @@
+// src/Components/TeacherForm.js
 import React, { useState } from 'react';
 import { Button, Form, Col, Row } from 'react-bootstrap';
 import styled from 'styled-components';
 import { z } from 'zod';
-import useTeacherStore from '../Store/TeachersStore';
-
+import useTeacher from '../Hooks/useTeacher';
 
 const schema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -20,7 +20,6 @@ const schema = z.object({
   specialization: z.string().min(1, { message: "Specialization is required" }),
   image: z.optional(z.string()), 
 });
-
 
 const StyledFormContainer = styled.div`
   background-color: #f8f9fa;
@@ -97,9 +96,8 @@ const HiddenFileInput = styled.input`
   display: none;
 `;
 
-// TeacherForm component
 const TeacherForm = (props) => {
-  const addTeacher = useTeacherStore((state) => state.addTeacher);
+  const { createTeacher } = useTeacher();
   const [teacherData, setTeacherData] = useState({
     name: '',
     email: '',
@@ -139,31 +137,19 @@ const TeacherForm = (props) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       schema.parse(teacherData);
 
-      addTeacher({
+      await createTeacher({
         ...teacherData,
         id: Date.now().toString(),
       });
 
-      setTeacherData({
-        name: '',
-        email: '',
-        password: '',
-        dateofbirth: '',
-        phone: '',
-        address: '',
-        questions: '',
-        hiredate: '',
-        specialization: '',
-        image: null,
-      });
-      setImagePreview(null);
+     
       setErrors({});
-      props.setShowForm(false); 
+      props.setShowForm(true); 
     } catch (err) {
       const formattedErrors = {};
       err.errors.forEach((error) => {
@@ -300,7 +286,7 @@ const TeacherForm = (props) => {
             <StyledFormGroup>
               <StyledLabel>Address</StyledLabel>
               <StyledFormControl
-                type="text"
+                as="textarea"
                 name="address"
                 value={teacherData.address}
                 onChange={handleInputChange}
@@ -338,8 +324,8 @@ const TeacherForm = (props) => {
             </StyledFormGroup>
           </Col>
         </Row>
-        <div className="text-center">
-          <StyledButton type="submit" variant="primary">Save</StyledButton>
+        <div className="d-flex justify-content-center">
+          <StyledButton type="submit">Save</StyledButton>
           <StyledButton type="button" variant="secondary" onClick={handleClear}>Clear</StyledButton>
         </div>
       </Form>

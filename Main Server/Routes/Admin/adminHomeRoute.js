@@ -6,7 +6,7 @@ const {
 
 const router = express.Router();
 
-router.get("/home", getStatistics);              
+router.get("/readall", getStatistics);              
   
 
 module.exports = router;

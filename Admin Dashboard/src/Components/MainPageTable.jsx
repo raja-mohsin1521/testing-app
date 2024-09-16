@@ -3,6 +3,9 @@ import { Table, Button, Row } from 'react-bootstrap';
 import styled from 'styled-components';
 
 const RequestsTable = (props) => {
+  // Destructure requests from props and set default value to an empty array
+  const { requests = [] } = props;
+
   return (
     <TableContainer>
       <StyledTable>
@@ -25,14 +28,14 @@ const RequestsTable = (props) => {
           </tr>
         </thead>
         <tbody>
-          {props.requests.length === 0 ? (
+          {requests.length === 0 ? (
             <tr>
               <td colSpan="6">
                 <NoDataMessage>No new requests found</NoDataMessage>
               </td>
             </tr>
           ) : (
-            props.requests.map((request, index) => (
+            requests.map((request, index) => (
               <tr key={index}>
                 <td>{index + 1}</td>
                 <td>{request.testName}</td>

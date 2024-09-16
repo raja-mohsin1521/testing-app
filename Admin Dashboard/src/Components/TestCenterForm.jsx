@@ -1,18 +1,20 @@
-// src/Components/TestCenterForm.js
 import React, { useState } from 'react';
 import { Button, Form, Col, Row } from 'react-bootstrap';
 import styled from 'styled-components';
 import { z } from 'zod';
-import useTestCenterStore from '../Store/TestCenterStore';
+import useTestCenter from '../Hooks/useTestCenter'; 
 
+// Update schema to include city
 const schema = z.object({
-  adminName: z.string().min(1, { message: "Admin Name is required" }),
+  adminEmail: z.string().min(1, { message: "Admin Email is required" }).email({ message: "Invalid email address" }),
   password: z.string()
     .min(8, { message: "Password must be at least 8 characters long" })
     .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
     .regex(/[\W_]/, { message: "Password must contain at least one special character" }),
   instituteName: z.string().min(1, { message: "Institute or Place Name is required" }),
   address: z.string().min(1, { message: "Address is required" }),
+  capacity: z.number().min(1, { message: "Capacity must be at least 1" }), // New field validation
+  city: z.string().min(1, { message: "City is required" }) // New field validation
 });
 
 const StyledFormContainer = styled.div`
@@ -55,12 +57,14 @@ const StyledButton = styled(Button)`
 `;
 
 const TestCenterForm = (props) => {
-  const addTestCenter = useTestCenterStore((state) => state.addTestCenter);
+  const { addTestCenter, fetchTestCenters } = useTestCenter();  
   const [testCenterData, setTestCenterData] = useState({
-    adminName: '',
+    adminEmail: '',
     password: '',
     instituteName: '',
     address: '',
+    capacity: '', // New field
+    city: '' // New field
   });
   const [errors, setErrors] = useState({});
 
@@ -72,39 +76,50 @@ const TestCenterForm = (props) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      schema.parse(testCenterData);
-
-      addTestCenter({
+      schema.parse({
         ...testCenterData,
-        id: Date.now().toString(),
+        capacity: Number(testCenterData.capacity), // Convert capacity to number
       });
-
+  
+      await addTestCenter({
+        ...testCenterData,
+        capacity: Number(testCenterData.capacity), 
+      });
+  
       setTestCenterData({
-        adminName: '',
+        adminEmail: '',
         password: '',
         instituteName: '',
         address: '',
+        capacity: '',
+        city: '' // Clear city field
       });
       setErrors({});
       props.setShowForm(false); 
     } catch (err) {
-      const formattedErrors = {};
-      err.errors.forEach((error) => {
-        formattedErrors[error.path[0]] = error.message;
-      });
-      setErrors(formattedErrors);
+      if (err instanceof z.ZodError) {
+        const formattedErrors = {};
+        err.errors.forEach((error) => {
+          formattedErrors[error.path[0]] = error.message;
+        });
+        setErrors(formattedErrors);
+      } else {
+        console.error("Unexpected error:", err);
+      }
     }
   };
 
   const handleClear = () => {
     setTestCenterData({
-      adminName: '',
+      adminEmail: '',
       password: '',
       instituteName: '',
       address: '',
+      capacity: '',
+      city: '' // Clear city field
     });
     setErrors({});
   };
@@ -116,15 +131,15 @@ const TestCenterForm = (props) => {
         <Row>
           <Col md={6} xs={12}>
             <StyledFormGroup>
-              <StyledLabel>Admin Name</StyledLabel>
+              <StyledLabel>Admin Email</StyledLabel>
               <StyledFormControl
-                type="text"
-                name="adminName"
-                value={testCenterData.adminName}
+                type="email"
+                name="adminEmail"
+                value={testCenterData.adminEmail}
                 onChange={handleInputChange}
-                isInvalid={!!errors.adminName}
+                isInvalid={!!errors.adminEmail}
               />
-              <Form.Control.Feedback type="invalid">{errors.adminName}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">{errors.adminEmail}</Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
           <Col md={6} xs={12}>
@@ -166,6 +181,32 @@ const TestCenterForm = (props) => {
                 isInvalid={!!errors.address}
               />
               <Form.Control.Feedback type="invalid">{errors.address}</Form.Control.Feedback>
+            </StyledFormGroup>
+          </Col>
+          <Col md={6} xs={12}>
+            <StyledFormGroup>
+              <StyledLabel>Capacity</StyledLabel>
+              <StyledFormControl
+                type="number"
+                name="capacity"
+                value={testCenterData.capacity}
+                onChange={handleInputChange}
+                isInvalid={!!errors.capacity}
+              />
+              <Form.Control.Feedback type="invalid">{errors.capacity}</Form.Control.Feedback>
+            </StyledFormGroup>
+          </Col>
+          <Col md={6} xs={12}>
+            <StyledFormGroup>
+              <StyledLabel>City</StyledLabel>
+              <StyledFormControl
+                type="text"
+                name="city"
+                value={testCenterData.city}
+                onChange={handleInputChange}
+                isInvalid={!!errors.city}
+              />
+              <Form.Control.Feedback type="invalid">{errors.city}</Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
         </Row>

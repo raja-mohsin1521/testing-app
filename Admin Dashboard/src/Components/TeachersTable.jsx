@@ -39,7 +39,7 @@ const TeachersTable = () => {
                 {teachers.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="text-center">
-                      <NoDataMessage>No teachers found</NoDataMessage>
+                      <NoDataMessage className='text-center'>No teachers found</NoDataMessage>
                     </td>
                   </tr>
                 ) : (

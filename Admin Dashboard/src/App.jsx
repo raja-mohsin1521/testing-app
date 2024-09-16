@@ -11,6 +11,7 @@ import ScheduleTest from './Pages/ScheduleTest';
 import Papers from './Pages/Papers';
 import Requests from './Pages/Requests';
 import Complains from './Pages/Complains';
+import Test from './Pages/Test';
 
 function App() {
   const location = useLocation();
@@ -28,6 +29,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/teachers" element={<Teachers />} />
           <Route path="/test-centers" element={<TestCenters />} />
+          <Route path="/add-test" element={<Test />} />
           <Route path="/students" element={<Students />} />
           <Route path="/scheduled-tests" element={<ScheduleTest />} />
           <Route path="/papers" element={<Papers />} />

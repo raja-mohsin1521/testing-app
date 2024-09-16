@@ -1,48 +1,61 @@
-const multer = require('multer');
-const path = require('path');
 const pool = require("../../db_Connection/db");
 const { generateToken } = require("../../jwt");
+const bcrypt = require('bcryptjs');
+const path = require('path');
+const multer = require('multer');
 
-// Configure multer for file uploads
+// Set up multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+    cb(null, 'uploads/'); // Set the folder where images will be stored
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage: storage }).single('image');
 
-
+// Create a new teacher
 const createTeacher = async (req, res) => {
-  
-  const image = req.file ? req.file.filename : null;
-  const { name, email, password, dateofbirth, phone, address, hiredate, subject_area } = req.body;
-console.log(req.body)
-  try {
-    const checkEmailResult = await pool.query("SELECT * FROM teachers WHERE email = $1", [email]);
-
-    if (checkEmailResult.rows.length > 0) {
-      return res.status(400).json({ error: "Email already exists" });
+  upload(req, res, async function (err) {
+    if (err instanceof multer.MulterError) {
+      return res.status(500).json({ error: "Multer error while uploading file." });
+    } else if (err) {
+      return res.status(500).json({ error: "Error uploading file." });
     }
 
-    const result = await pool.query(
-      "INSERT INTO teachers (name, email, password, dateofbirth, phone, address, hiredate, subject_area, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *",
-      [name, email, password, dateofbirth, phone, address, hiredate, subject_area, image]
-    );
+    const image = req.file ? req.file.filename : null;
+    const { name, email, password, dateofbirth, phone, address, hiredate, subject_area } = req.body;
 
-    const newTeacher = result.rows[0];
-    const token = generateToken(newTeacher);
+    try {
+      // Check if email already exists
+      const checkEmailResult = await pool.query("SELECT * FROM teachers WHERE email = $1", [email]);
 
-    res.json({ teacher: newTeacher, token });
-  } catch (err) {
-    console.error("Error creating teacher:", err);
-    res.status(500).json({ error: "Server error", details: err.message });
-  }
+      if (checkEmailResult.rows.length > 0) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Insert new teacher record
+      const result = await pool.query(
+        "INSERT INTO teachers (name, email, password, dateofbirth, phone, address, hiredate, subject_area, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *",
+        [name, email, hashedPassword, dateofbirth, phone, address, hiredate, subject_area, image]
+      );
+
+      const newTeacher = result.rows[0];
+      const token = generateToken(newTeacher);
+
+      res.json({ teacher: newTeacher, token });
+    } catch (err) {
+      console.error("Error creating teacher:", err);
+      res.status(500).json({ error: "Server error", details: err.message });
+    }
+  });
 };
-
 // Read all teachers
 const readAllTeachers = async (req, res) => {
   try {

@@ -1,34 +1,40 @@
-// src/Components/TestCentersTable.js
 import React, { useState } from 'react';
 import { Table, Button, Container, Row, Col } from 'react-bootstrap';
 import styled from 'styled-components';
-import useTestCenterStore from '../Store/TestCenterStore';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; 
+import useTestCenter from '../Hooks/useTestCenter';
+import { TestCenterStore } from '../Store/TestCenterStore';
 
 const TestCenterTable = () => {
-  const { testCenters, deleteTestCenter, updateTestCenter } = useTestCenterStore((state) => ({
-    testCenters: state.testCenters,
-    deleteTestCenter: state.deleteTestCenter,
-    updateTestCenter: state.updateTestCenter,
+  const { testCenters } = TestCenterStore((state) => ({
+    testCenters: state.data
   }));
 
+  const { updateTestCenter, deleteTestCenter } = useTestCenter();
+
   const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({ adminName: '', instituteName: '', address: '' });
+  const [editData, setEditData] = useState({ admin_email: '', institute_name: '', address: '', password: '', capacity: '' });
+  const [showPassword, setShowPassword] = useState(false); 
 
   const handleEdit = (testCenter) => {
-    setEditingId(testCenter.id);
+    setEditingId(testCenter.test_center_id);
     setEditData({
-      adminName: testCenter.adminName,
-      instituteName: testCenter.instituteName,
+      admin_email: testCenter.admin_email,
+      institute_name: testCenter.institute_name,
       address: testCenter.address,
+      password: testCenter.password,
+      capacity: testCenter.capacity, // Include capacity
     });
   };
 
   const handleSave = () => {
     updateTestCenter({
       id: editingId,
-      adminName: editData.adminName,
-      instituteName: editData.instituteName,
+      admin_email: editData.admin_email,
+      institute_name: editData.institute_name,
       address: editData.address,
+      password: editData.password,
+      capacity: editData.capacity, // Include capacity
     });
     setEditingId(null);
   };
@@ -36,6 +42,14 @@ const TestCenterTable = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEditData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleDelete = (id) => {
+    deleteTestCenter(id);
   };
 
   return (
@@ -51,50 +65,52 @@ const TestCenterTable = () => {
             <StyledTable striped bordered hover>
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Admin Name</th>
-                  <th>Institute/Place Name</th>
+                  <th>Id</th>
+                  <th>Admin Email</th>
+                  <th>Institute</th>
                   <th>Address</th>
+                  <th>Password</th>
+                  <th>Capacity</th> {/* Add Capacity column */}
                   <th colSpan={2}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {testCenters.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center">
+                    <td colSpan="8" className="text-center">
                       <NoDataMessage>No test centers found</NoDataMessage>
                     </td>
                   </tr>
                 ) : (
-                  testCenters.map((testCenter) => (
-                    <tr key={testCenter.id}>
-                      <td>{testCenter.id}</td>
-                      <td>
-                        {editingId === testCenter.id ? (
+                  testCenters.map((testCenter, index) => (
+                    <tr key={testCenter.test_center_id}>
+                      <td data-label="No">{index + 1}</td>
+                      <td data-label="Admin Email">
+                        {editingId === testCenter.test_center_id ? (
                           <input
-                            type="text"
-                            name="adminName"
-                            value={editData.adminName}
+                            type="email"
+                            name="admin_email"
+                            value={editData.admin_email}
                             onChange={handleChange}
                           />
                         ) : (
-                          testCenter.adminName
+                          testCenter.admin_email
                         )}
                       </td>
-                      <td>
-                        {editingId === testCenter.id ? (
+                      <td data-label="Institute">
+                        {editingId === testCenter.test_center_id ? (
                           <input
                             type="text"
-                            name="instituteName"
-                            value={editData.instituteName}
+                            name="institute_name"
+                            value={editData.institute_name}
                             onChange={handleChange}
                           />
                         ) : (
-                          testCenter.instituteName
+                          testCenter.institute_name
                         )}
                       </td>
-                      <td>
-                        {editingId === testCenter.id ? (
+                      <td data-label="Address">
+                        {editingId === testCenter.test_center_id ? (
                           <input
                             type="text"
                             name="address"
@@ -105,17 +121,55 @@ const TestCenterTable = () => {
                           testCenter.address
                         )}
                       </td>
+                      <td data-label="Password">
+                        {editingId === testCenter.test_center_id ? (
+                          <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <input
+                              type={showPassword ? 'text' : 'password'}
+                              name="password"
+                              value={editData.password}
+                              onChange={handleChange}
+                            />
+                            <EyeIcon onClick={togglePasswordVisibility}>
+                              {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </EyeIcon>
+                          </div>
+                        ) : (
+                          '********'
+                        )}
+                      </td>
+                      <td data-label="Capacity">
+                        {editingId === testCenter.test_center_id ? (
+                          <input
+                            type="number"
+                            name="capacity"
+                            value={editData.capacity}
+                            onChange={handleChange}
+                          />
+                        ) : (
+                          testCenter.capacity
+                        )}
+                      </td>
                       <td>
-                        {editingId === testCenter.id ? (
+                        {editingId === testCenter.test_center_id ? (
                           <>
-                            <StyledButton variant="success" onClick={handleSave}>Save</StyledButton>
-                            <StyledButton variant="secondary" onClick={() => setEditingId(null)}>Cancel</StyledButton>
+                            <StyledButton className="my-2" variant="success" onClick={handleSave}>
+                              Save
+                            </StyledButton>
+                            <StyledButton className="my-2" variant="secondary" onClick={() => setEditingId(null)}>
+                              Cancel
+                            </StyledButton>
                           </>
                         ) : (
-                          <StyledButton variant="warning" onClick={() => handleEdit(testCenter)}>Edit</StyledButton>
+                          <StyledButton className="my-2" variant="warning" onClick={() => handleEdit(testCenter)}>
+                            Edit
+                          </StyledButton>
                         )}
-                      
-                        <StyledButton variant="danger" onClick={() => deleteTestCenter(testCenter.id)}>Delete</StyledButton>
+                        {editingId !== testCenter.test_center_id && (
+                          <StyledButton className="my-2" variant="danger" onClick={() => handleDelete(testCenter.test_center_id)}>
+                            Delete
+                          </StyledButton>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -130,31 +184,79 @@ const TestCenterTable = () => {
 };
 
 const TableContainer = styled.div`
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto; /* Add vertical scrolling */
+  max-height: 500px; /* Set a fixed height */
 `;
 
 const StyledTable = styled(Table)`
-  thead {
-    background-color: #343a40;
-    color: #fff;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  th, td {
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  @media (max-width: 768px) {
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: block;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    tr {
+      display: block;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    td {
+      display: block;
+      text-align: right;
+      position: relative;
+      padding-left: 50%;
+      padding-right: 10px;
+      white-space: nowrap;
+    }
+
+    td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 0;
+      width: 50%;
+      padding-left: 10px;
+      font-weight: bold;
+      text-align: left;
+    }
   }
 `;
 
 const Heading = styled.h2`
   text-align: center;
-  color: #343a40;
-  margin-bottom: 20px;
+  color: #333;
 `;
 
-const NoDataMessage = styled.div`
-  color: #6c757d;
+const NoDataMessage = styled.p`
+  color: #888;
 `;
 
 const StyledButton = styled(Button)`
-  margin-right: 10px;
+  margin: 0 5px;
+`;
+
+const EyeIcon = styled.div`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #007bff;
 `;
 
 export default TestCenterTable;

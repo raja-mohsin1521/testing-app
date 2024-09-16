@@ -1,17 +1,18 @@
 const express = require("express");
 const {
-  createTeacher,
-  readAllTeachers,
-  updateTeacher,
-  deleteTeacher,
-} = require("../../Controller/Admin/adminTeacherController");
+  createStudent,
+  getAllStudents,
+  updateStudent,
+  deleteStudent,
+
+} = require("../../Controller/Admin/adminStudentController");
 
 const router = express.Router();
 
-
-router.post("/create", createTeacher);      
-router.get("/readall", readAllTeachers);     
-router.put("/update", updateTeacher);        
-router.delete("/delete", deleteTeacher);    
+router.post("/", createStudent);              
+router.get("/readall",  getAllStudents);     
+router.put("/update", updateStudent);        
+router.delete("/delete", deleteStudent);    
+router.post("/bulk-register", registerStudentsFromExcel);  
 
 module.exports = router;

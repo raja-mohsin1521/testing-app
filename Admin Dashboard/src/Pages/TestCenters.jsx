@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { Button, Col, Container, Row, Form } from 'react-bootstrap';
 import styled from 'styled-components';
-import TestCentersTable from '../Components/TesTCenterTable';
+
 import TestCenterForm from '../Components/TestCenterForm';
+import TestCenterBookingTable from '../Components/TestCenterBookingTable';
+import TestCenterTable from '../Components/TesTCenterTable';
 
 const TestCenters = () => {
   const [showForm, setShowForm] = useState(false);
@@ -25,9 +27,14 @@ const TestCenters = () => {
         </Col>
       </Row>
       <hr/>
+       <Row className='mt-5'>
+        <Col>
+          <TestCenterTable />
+        </Col>
+      </Row>
       <Row className='mt-5'>
         <Col>
-          <TestCentersTable />
+          <TestCenterBookingTable  />
         </Col>
       </Row>
     </FullHeightContainer>

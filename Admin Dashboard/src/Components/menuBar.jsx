@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Button, Col, Row, Nav  } from 'react-bootstrap';
+import { Button, Col, Row, Nav } from 'react-bootstrap';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaBars } from 'react-icons/fa';
+import { FaBars, FaTimes } from 'react-icons/fa';
 
 const SidebarContainer = styled.div`
   width: ${(props) => (props.open ? '200px' : '0')};
@@ -12,20 +12,20 @@ const SidebarContainer = styled.div`
   transition: width 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
 
-  @media (max-width: 745px) {
-    position: absolute;
-    top: 0;
-    left: ${(props) => (props.open ? '0' : '-200px')};
-    z-index: 2;
+  @media (min-width: 746px) {
+    width: ${(props) => (props.open ? '200px' : '0')}; /* Toggleable on larger screens */
   }
 `;
 
 const ToggleButton = styled.button`
-  position: absolute;
-  top: 300px;
-  left: ${(props) => (props.open ? '180px' : '0')};
+  position: fixed;
+  top: 10px;
+  left: ${(props) => (props.open ? '200px' : '0px')}; /* Adjust based on the sidebar width */
   background-color: #343a40;
   z-index: 3;
   border: none;
@@ -37,23 +37,20 @@ const ToggleButton = styled.button`
   &:hover {
     background-color: #495057;
   }
-
-  @media (min-width: 746px) {
-    display: none;
-  }
 `;
 
 const StyledNav = styled(Nav)`
   flex-direction: column;
   height: 100%;
-  padding-top: 60px;
-  flex-grow: 1; /* Allows the navigation content to grow */
+  padding-top: 40px;
+  flex-grow: 1;
 `;
 
 const StyledNavLink = styled(Link)`
   color: ${(props) => (props.active ? '#ffc107' : '#fff')};
   padding: 15px 20px;
   text-decoration: none;
+  display: block;
 
   &:hover {
     background-color: #495057;
@@ -62,7 +59,7 @@ const StyledNavLink = styled(Link)`
 `;
 
 const BottomButtonRow = styled(Row)`
-  margin-top: auto; /* Push the button to the bottom */
+  margin-top: auto;
   padding-bottom: 20px;
 `;
 
@@ -70,22 +67,20 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+
   const handleLogout = () => {
-    
-    navigate('/login'); 
+    navigate('/login');
   };
+
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
   return (
     <>
-      <ToggleButton onClick={toggleSidebar} open={isOpen}>
-        <FaBars />
-      </ToggleButton>
       <SidebarContainer open={isOpen}>
         <StyledNav>
-          <h3 className="text-white  mx-3">Admin Panel</h3>
+          <h3 className="text-white mx-3">Admin Panel</h3>
           <StyledNavLink to="/" active={location.pathname === '/'}>
             Dashboard
           </StyledNavLink>
@@ -97,6 +92,9 @@ const Sidebar = () => {
           </StyledNavLink>
           <StyledNavLink to="/teachers" active={location.pathname === '/teachers'}>
             Teachers
+          </StyledNavLink>
+          <StyledNavLink to="/add-test" active={location.pathname === '/add-test'}>
+            Add Test
           </StyledNavLink>
           <StyledNavLink to="/scheduled-tests" active={location.pathname === '/scheduled-tests'}>
             Scheduled Tests
@@ -113,11 +111,14 @@ const Sidebar = () => {
 
           <BottomButtonRow className="text-center">
             <Col>
-              <Button className="btn-dark w-50 " onClick={handleLogout} >Logout</Button>
+              <Button className="btn-dark w-50" onClick={handleLogout}>Logout</Button>
             </Col>
           </BottomButtonRow>
         </StyledNav>
       </SidebarContainer>
+      <ToggleButton onClick={toggleSidebar} open={isOpen}>
+        {isOpen ? <FaTimes /> : <FaBars />}
+      </ToggleButton>
     </>
   );
 };
