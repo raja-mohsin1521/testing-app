@@ -1,8 +1,9 @@
 import React from 'react'
+import ScheduleTestForm from '../Components/ScheduleTestForm'
 
 function ScheduleTest() {
   return (
-    <div>ScheduleTest</div>
+  <><ScheduleTestForm/></>
   )
 }
 

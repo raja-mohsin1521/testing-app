@@ -5,7 +5,7 @@ const addTestCenter = async (req, res) => {
 
   
   try {
-    // Check if email already exists
+   
     const emailCheckResult = await pool.query(
       'SELECT * FROM test_center WHERE admin_email = $1',
       [adminEmail]

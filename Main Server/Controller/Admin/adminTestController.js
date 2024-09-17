@@ -46,32 +46,34 @@ const getAllTests = async (req, res) => {
 
 // Update a test
 const updateTest = async (req, res) => {
-  const { testId, testName, subject, eligibilityCriteria, difficultyLevel, numberOfQuestions } = req.body;
-
-  if (!testId || !testName || !difficultyLevel || numberOfQuestions === undefined) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  try {
-    const result = await pool.query(
-      `UPDATE test
-       SET test_name = $1, subject = $2, eligibility_criteria = $3, difficulty_level = $4, number_of_questions = $5
-       WHERE test_id = $6`,
-      [testName, subject, eligibilityCriteria, difficultyLevel, numberOfQuestions, testId]
-    );
-    res.status(200).json({ message: 'Test updated successfully' });
-  } catch (error) {
-    console.error('Error updating test:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
+    const { id, name, subject, eligibility_criteria, difficulty_level, number_of_questions } = req.body; // Update these variable names
+    console.log('req.body', req.body);
+  
+    // Validate the required fields
+    if (!id || !name || !difficulty_level || number_of_questions === undefined) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+  
+    try {
+      const result = await pool.query(
+        `UPDATE test
+         SET test_name = $1, subject = $2, eligibility_criteria = $3, difficulty_level = $4, number_of_questions = $5
+         WHERE test_id = $6`,
+        [name, subject, eligibility_criteria, difficulty_level, number_of_questions, id] // Match the order to variables
+      );
+      res.status(200).json({ message: 'Test updated successfully' });
+    } catch (error) {
+      console.error('Error updating test:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+  
 // Delete a test
 const deleteTest = async (req, res) => {
-  const { testId } = req.body;
+  const { id } = req.body;
 
   try {
-    const result = await pool.query('DELETE FROM test WHERE test_id = $1 RETURNING *', [testId]);
+    const result = await pool.query('DELETE FROM test WHERE test_id = $1 RETURNING *', [id]);
     if (result.rows.length > 0) {
       return res.status(200).json({
         success: true,

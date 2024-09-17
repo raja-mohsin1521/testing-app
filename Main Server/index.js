@@ -8,6 +8,7 @@ const adminHomeRoute = require("./Routes/Admin/adminHomeRoute");
 const adminTeacherRoutes = require('./Routes/Admin/adminTeacherRoutes');
 const adminTestCenterRoutes = require('./Routes/Admin/adminTestCenterRoutes');
 const adminTestRoutes = require('./Routes/Admin/adminTestRoutes');
+const adminScheduleTestRoutes = require('./Routes/Admin/adminScheduleTestRoutes');
 dotenv.config();
 
 const app = express();
@@ -30,6 +31,7 @@ const upload = multer({
 app.use("/student", studentAuthRoutes);
 app.use("/teacher", teacherAuthRoutes);
 app.use("/admin/home", adminHomeRoute);
+app.use("/admin/schedule-test", adminScheduleTestRoutes);
 app.use("/admin/teacher", adminTeacherRoutes);
 app.use("/admin/testcenter", adminTestCenterRoutes);
 app.use("/admin/test", adminTestRoutes);
