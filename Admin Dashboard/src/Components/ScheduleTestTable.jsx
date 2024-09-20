@@ -40,7 +40,7 @@ const ScheduleTestTable = () => {
       centerIds
     });
     
-    // Call your function to get detailed test info
+    
     getDetailedTestInfo({
       testId,
       testDate,
@@ -49,7 +49,7 @@ const ScheduleTestTable = () => {
     });
 
     // Navigate to the detail page
-    navigate("/scheduletestdetail");
+    navigate(`/scheduletestdetail/${testId}/${testDate}/${testTime}`);
   };
 
   return (

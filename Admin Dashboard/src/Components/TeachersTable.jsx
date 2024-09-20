@@ -3,6 +3,7 @@ import { Table, Button, Container, Row, Col } from 'react-bootstrap';
 import styled from 'styled-components';
 import { useStore } from '../Store/TeachersStore';
 import useTeacher from '../Hooks/useTeacher';
+import { useNavigate } from 'react-router-dom';
 const TeachersTable = () => {
 
   const {readTeachers,deleteTeacher}=useTeacher()
@@ -24,10 +25,11 @@ const TeachersTable = () => {
     // Set local state with the initial teachers data from the store
     setLocalTeachers(teachers);
   }, [teachers]);
-
+  const navigate = useNavigate();
   // Handle the view action
   const handleView = (teacher) => {
     console.log('View', teacher);
+    navigate(`/teachers/${teacher}`)
   };
 
   // Handle the delete action locally

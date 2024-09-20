@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Container, Row, Col, Table, Button, Form } from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 const StyledContainer = styled(Container)`
@@ -46,25 +47,86 @@ const SubHeading = styled.h3`
 `;
 
 const StyledTable = styled(Table)`
-  background-color: #ffffff;
-  border-radius: 0.5rem;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-height: 400px;
-  overflow-y: scroll;
-
   thead {
-    background-color: #00796b;
+    background-color: #007bff; 
     color: white;
-    position: sticky;
-    top: 0;
-    z-index: 1;
   }
 
-  th,
-  td {
-    text-align: center;
+  tbody tr {
+    transition: background-color 0.3s;
   }
+
+  @media (max-width: 768px) {
+    thead {
+      display: none; 
+    }
+
+    tbody {
+      display: block;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    tr {
+      display: block;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    td {
+      display: block;
+      text-align: right;
+      position: relative;
+      padding-left: 50%;
+      padding-right: 10px;
+
+      &::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 45%;
+        padding-left: 10px;
+        font-weight: bold;
+        text-align: left;
+      }
+    }
+  }
+    @media (max-width: 768px) {
+  thead {
+    display: none; 
+  }
+
+  tbody {
+    display: block;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  tr {
+    display: block;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  td {
+    display: block;
+    text-align: right;
+    position: relative;
+    padding-left: 50%;
+    padding-right: 10px;
+
+    &::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 0;
+      width: 45%;
+      padding-left: 10px;
+      font-weight: bold;
+      text-align: left;
+    }
+  }
+}
+
 `;
 
 const ScrollableContainer = styled.div`
@@ -73,6 +135,14 @@ const ScrollableContainer = styled.div`
 `;
 
 const ScheduleTestDetails = () => {
+
+  const { test_id, test_date, test_time } = useParams();
+
+  console.log('Test ID:', test_id);
+  console.log('Test Date:', test_date);
+  console.log('Test Time:', test_time);
+
+
   const [selectedCenter, setSelectedCenter] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [newDates, setNewDates] = useState({
@@ -136,6 +206,10 @@ const ScheduleTestDetails = () => {
       },
     ],
   };
+  const navigate = useNavigate();
+  function goBack(){
+    navigate('/scheduled-tests')
+  }
 
   const handleRowClick = (center) => {
     setSelectedCenter(center);
@@ -195,7 +269,7 @@ const ScheduleTestDetails = () => {
   
   return (
     <StyledContainer>
-      <Button className="btn-dark">Back</Button>
+      <Button className="btn-dark" onClick={goBack} >Back</Button>
 
       <Heading>Test Details</Heading>
 
@@ -373,9 +447,9 @@ const ScheduleTestDetails = () => {
                 {selectedCenter.studentNames.map((name, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td>{name}</td>
-                    <td>{selectedCenter.studentEmails[index]}</td>
-                    <td>{selectedCenter.studentCNICs[index]}</td>
+                    <td data-label="Name">{name}</td>
+                    <td data-label="Email">{selectedCenter.studentEmails[index]}</td>
+                    <td data-label="CNIC">{selectedCenter.studentCNICs[index]}</td>
                   </tr>
                 ))}
               </tbody>

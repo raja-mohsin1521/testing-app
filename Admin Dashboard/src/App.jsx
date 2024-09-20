@@ -13,6 +13,7 @@ import Requests from './Pages/Requests';
 import Complains from './Pages/Complains';
 import Test from './Pages/Test';
 import ScheduleTestDetails from './Pages/ScheduleTestDetails';
+import TeacherDetails from './Pages/TeacherDetails';
 
 function App() {
   const location = useLocation();
@@ -36,9 +37,12 @@ function App() {
               <Route path="/papers" element={<Papers />} />
               <Route path="/requests" element={<Requests />} />
               <Route path="/complains" element={<Complains />} />
-              <Route path="/scheduletestdetail" element={<ScheduleTestDetails />} />
+              <Route path="/scheduletestdetail/:test_id/:test_date/:test_time" element={<ScheduleTestDetails />} />
+
+              <Route path={`/teachers/:teacherId`} element={<TeacherDetails />} />
+
               
-              {/* Redirect from login to dashboard if token is present */}
+              
               <Route path="/login" element={<Navigate to="/" replace />} />
             </>
           ) : (

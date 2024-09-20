@@ -64,7 +64,7 @@ const BottomButtonRow = styled(Row)`
 `;
 
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 

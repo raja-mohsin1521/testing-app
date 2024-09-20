@@ -1,7 +1,7 @@
 const pool = require("../../db_Connection/db");
 const { generateToken } = require("../../jwt");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt"); // For password hashing
+const bcrypt = require("bcryptjs");
 
 const loginTeacher = async (req, res) => {
   const { email, password } = req.body;
