@@ -1,17 +1,41 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Container, Row, Col } from 'react-bootstrap';
 import styled from 'styled-components';
-import useTeacherStore from '../Store/TeachersStore';
-
+import { useStore } from '../Store/TeachersStore';
+import useTeacher from '../Hooks/useTeacher';
 const TeachersTable = () => {
-  const { teachers, deleteTeacher } = useTeacherStore((state) => ({
-    teachers: state.teachers,
-    deleteTeacher: state.deleteTeacher,
-  }));
 
+  const {readTeachers,deleteTeacher}=useTeacher()
+  useEffect(() => {
+   
+     readTeachers();
+    
+    },[]);
+
+  // Example usage
+  const { teachers } = useStore((state) => ({
+    teachers: state.teachers,
+  }));
+  
+  // Local state to manage table data
+  const [localTeachers, setLocalTeachers] = useState([]);
+
+  useEffect(() => {
+    // Set local state with the initial teachers data from the store
+    setLocalTeachers(teachers);
+  }, [teachers]);
+
+  // Handle the view action
   const handleView = (teacher) => {
-    console.log('View', teacher.id);
+    console.log('View', teacher);
+  };
+
+  // Handle the delete action locally
+  const handleDelete = (teacherId) => {
+    const updatedTeachers = localTeachers.filter((teacher) => teacher.id !== teacherId);
+    deleteTeacher(teacherId)
+    setLocalTeachers(updatedTeachers); // Update the local state
+    console.log('Deleted teacher with id:', teacherId);
   };
 
   return (
@@ -28,31 +52,39 @@ const TeachersTable = () => {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Name</th>
+               
                   <th>Email</th>
+                  <th>Specialization
+                  </th>
                   <th>Total Questions</th>
                   <th>Added Questions</th>
                   <th colSpan={2}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {teachers.length === 0 ? (
+                {localTeachers.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="text-center">
-                      <NoDataMessage className='text-center'>No teachers found</NoDataMessage>
+                      <NoDataMessage className="text-center">No teachers found</NoDataMessage>
                     </td>
                   </tr>
                 ) : (
-                  teachers.map((teacher) => (
-                    <tr key={teacher.id}>
-                      <td>{teacher.id}</td>
-                      <td>{teacher.name}</td>
+                  localTeachers.map((teacher,index) => (
+                    <tr key={teacher.teacher_id}>
+                      <td>{index+1}</td>
+                   
                       <td>{teacher.email}</td>
-                      <td>{teacher.questions}</td>
-                      <td>{teacher.addedQuestions}</td>
+                      <td>{teacher.subject_specialization
+                      }</td>
+                      <td>{teacher.required_questions}</td>
+                      <td>{teacher.total_questions}</td>
                       <td>
-                        <StyledButton variant="dark" onClick={() => handleView(teacher)}>View</StyledButton>
-                        <StyledButton variant="danger" onClick={() => deleteTeacher(teacher.id)}>Delete</StyledButton>
+                        <StyledButton variant="dark" className='mx-2 my-2' onClick={() => handleView(teacher.teacher_id)}>
+                          View
+                        </StyledButton>
+                        <StyledButton variant="danger" onClick={() => handleDelete(teacher.teacher_id)}>
+                          Delete
+                        </StyledButton>
                       </td>
                     </tr>
                   ))

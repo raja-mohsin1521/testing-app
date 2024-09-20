@@ -69,6 +69,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    localStorage.removeItem('authToken')
     navigate('/login');
   };
 
@@ -108,7 +109,7 @@ const Sidebar = () => {
           <StyledNavLink to="/complains" active={location.pathname === '/complains'}>
             Complains
           </StyledNavLink>
-
+       
           <BottomButtonRow className="text-center">
             <Col>
               <Button className="btn-dark w-50" onClick={handleLogout}>Logout</Button>

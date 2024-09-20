@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Login from './Pages/Login';
 import Dashboard from './Pages/Dashboard';
@@ -12,29 +12,42 @@ import Papers from './Pages/Papers';
 import Requests from './Pages/Requests';
 import Complains from './Pages/Complains';
 import Test from './Pages/Test';
+import ScheduleTestDetails from './Pages/ScheduleTestDetails';
 
 function App() {
   const location = useLocation();
-
-
+  const token = localStorage.getItem('authToken'); 
   const isLoginPage = location.pathname === '/login';
 
   return (
     <div style={{ display: 'flex' }}>
- 
       {!isLoginPage && <Sidebar />}
       <div style={{ flex: 1, padding: '20px' }}>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/teachers" element={<Teachers />} />
-          <Route path="/test-centers" element={<TestCenters />} />
-          <Route path="/add-test" element={<Test />} />
-          <Route path="/students" element={<Students />} />
-          <Route path="/scheduled-tests" element={<ScheduleTest />} />
-          <Route path="/papers" element={<Papers />} />
-          <Route path="/requests" element={<Requests />} />
-          <Route path="/complains" element={<Complains />} />
+          {/* If token is present, show the main app routes */}
+          {token ? (
+            <>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/teachers" element={<Teachers />} />
+              <Route path="/test-centers" element={<TestCenters />} />
+              <Route path="/add-test" element={<Test />} />
+              <Route path="/students" element={<Students />} />
+              <Route path="/scheduled-tests" element={<ScheduleTest />} />
+              <Route path="/papers" element={<Papers />} />
+              <Route path="/requests" element={<Requests />} />
+              <Route path="/complains" element={<Complains />} />
+              <Route path="/scheduletestdetail" element={<ScheduleTestDetails />} />
+              
+              {/* Redirect from login to dashboard if token is present */}
+              <Route path="/login" element={<Navigate to="/" replace />} />
+            </>
+          ) : (
+            // If no token, only show the login page and redirect other routes to login
+            <>
+              <Route path="/login" element={<Login />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </>
+          )}
         </Routes>
       </div>
     </div>

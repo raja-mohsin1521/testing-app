@@ -7,17 +7,15 @@ const getStatistics = async (req, res) => {
 
     const todayTestsResult = await pool.query(`
       SELECT COUNT(*) AS booked_today
-      FROM test_registration
-      JOIN scheduled_test ON test_registration.scheduled_test_id = scheduled_test.scheduled_test_id
-      WHERE DATE(scheduled_test.test_date_time) = CURRENT_DATE
+      FROM scheduled_test
+      WHERE test_date = CURRENT_DATE
     `);
     const todayTests = parseInt(todayTestsResult.rows[0].booked_today);
 
     const upcomingTestsResult = await pool.query(`
       SELECT COUNT(*) AS booked_upcoming
-      FROM test_registration
-      JOIN scheduled_test ON test_registration.scheduled_test_id = scheduled_test.scheduled_test_id
-      WHERE scheduled_test.test_date_time > CURRENT_TIMESTAMP
+      FROM scheduled_test
+      WHERE (test_date + test_time) > CURRENT_TIMESTAMP
     `);
     const upcomingTests = parseInt(upcomingTestsResult.rows[0].booked_upcoming);
 
@@ -57,10 +55,14 @@ const getStatistics = async (req, res) => {
     const totalTeachersResult = await pool.query("SELECT COUNT(*) AS total_teachers FROM teacher");
     const totalTeachers = parseInt(totalTeachersResult.rows[0].total_teachers);
 
-    const totalQuestionsResult = await pool.query("SELECT COUNT(*) AS total_questions FROM question");
-    const totalQuestions = parseInt(totalQuestionsResult.rows[0].total_questions);
+  
+const totalQuestionsResult = await pool.query("SELECT SUM(required_questions) AS total_questions FROM teacher");
+const totalQuestions = parseInt(totalQuestionsResult.rows[0].total_questions) || 0;
 
-    const addedQuestionsResult = await pool.query("SELECT COUNT(*) AS added_questions FROM question WHERE difficulty_level IS NOT NULL");
+
+    const addedQuestionsResult = await pool.query(`
+     SELECT COUNT(*) AS total_questions FROM question
+    `);
     const addedQuestions = parseInt(addedQuestionsResult.rows[0].added_questions);
 
     const remainingQuestionsResult = await pool.query(`
@@ -120,5 +122,6 @@ const getStatistics = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 module.exports = { getStatistics };

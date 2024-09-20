@@ -4,6 +4,7 @@ import { Button, Col, Container, Row } from 'react-bootstrap';
 
 import TeacherForm from '../Components/TeacherForm';
 import styled from 'styled-components';
+import TeachersTable from '../Components/TeachersTable';
 
 const Teachers = () => {
   const [showForm, setShowForm] = useState(false);
@@ -25,11 +26,11 @@ const Teachers = () => {
         </Col>
       </Row>
       <hr/>
-      {/* <Row className='mt-5'>
+       <Row className='mt-5'>
         <Col>
           <TeachersTable />
         </Col>
-      </Row> */}
+      </Row> 
     </FullHeightContainer>
   );
 };

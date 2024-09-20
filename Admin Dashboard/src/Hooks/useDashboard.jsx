@@ -13,6 +13,7 @@ const useDashboard = () => {
       setLoading(true);
       try {
         const response = await axios.get(BASE_URL);
+        console.log('response', response)
         setDashboardData(response.data);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);

@@ -12,7 +12,7 @@ import RequestsTable from '../Components/MainPageTable';
 import useDashboard from '../Hooks/useDashboard';
 
 function Dashboard() {
-  const { dashboard, loading, error } = useDashboard(); // Call the hook here
+  const { dashboard, loading, error } = useDashboard(); 
 
   if (loading) {
     return (
@@ -73,21 +73,21 @@ function Dashboard() {
     { name: "Verified Students", value: dashboard.verifiedStudents },
     { name: "Pending Verification", value: dashboard.pendingVerification },
     { name: "Canceled Students", value: dashboard.canceledStudents },
-    { name: "Enrolled For Test", value: dashboard.centersEnrolled },
+ 
   ];
 
   const teacherStats = [
     { name: "Total Teachers", value: dashboard.totalTeachers },
-    { name: "Total Questions", value: dashboard.totalQuestions },
-    { name: "Added Questions", value: dashboard.addedQuestions },
-    { name: "Remaining Questions", value: dashboard.remainingQuestions },
+    { name: "Required Questions", value: dashboard.totalQuestions },
+    { name: "Added Questions", value: dashboard.addedQuestions || 0},
+    { name: "Remaining Questions", value:dashboard.totalQuestions- dashboard.addedQuestions || 0 },
   ];
 
   const testCenterStats = [
     { name: "Total Centers", value: dashboard.totalTestCenters },
-    { name: "Booked Upcoming", value: dashboard.upcomingTests },
+    { name: "Booked Upcoming", value: dashboard.centersEnrolled },
     { name: "Booked Today", value: dashboard.todayTests },
-    { name: "Standby", value: dashboard.totalTests - (dashboard.upcomingTests + dashboard.todayTests) },
+    { name: "Standby", value: dashboard.totalTests - (dashboard.centersEnrolled ) },
   ];
 
   return (

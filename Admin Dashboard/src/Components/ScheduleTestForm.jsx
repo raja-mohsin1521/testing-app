@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form, Container, Row, Col } from "react-bootstrap";
 import styled from "styled-components";
-import useScheduleTest from "../Hooks/useScheduleTest"; 
+import useScheduleTest from "../Hooks/useScheduleTest";
 
 const StyledFormContainer = styled(Container)`
   background-color: #ffffff;
@@ -78,9 +78,8 @@ const NoCentersMessage = styled.p`
   font-weight: 500;
 `;
 
-const ScheduleTestForm = () => {
-
-const [validationError,setValidationError]=useState('')
+const ScheduleTestForm = (props) => {
+  const [validationError, setValidationError] = useState("");
 
   const {
     allCities,
@@ -105,6 +104,7 @@ const [validationError,setValidationError]=useState('')
     regStartDate: "",
     regEndDate: "",
     testDate: "",
+    testTime:""
   });
 
   const [noCentersMessage, setNoCentersMessage] = useState("");
@@ -115,17 +115,32 @@ const [validationError,setValidationError]=useState('')
 
   useEffect(() => {
     fetchAllCities();
-    fetchAllCenters();
-  }, [fetchAllCities, fetchAllCenters]);
+  }, [fetchAllCities]);
 
   useEffect(() => {
+    if (formData.location === "all" && formData.testDate && formData.testTime) {
+      fetchAllCenters(formData.testDate,formData.testTime);
+    }
+
     if (
       formData.location === "selected" &&
-      formData.selectedCities.length > 0
+      formData.selectedCities.length > 0 &&
+      formData.testDate && formData.testTime
     ) {
-      fetchSpecificCenters(formData.selectedCities);
+      fetchSpecificCenters({
+        city: formData.selectedCities,
+        date: formData.testDate,
+        time: formData.testTime
+      });
     }
-  }, [formData.selectedCities, formData.location, fetchSpecificCenters]);
+  }, [
+    formData.location,
+    formData.selectedCities,
+    formData.testDate,
+    formData.testTime,
+    fetchSpecificCenters,
+    fetchAllCenters,
+  ]);
 
   useEffect(() => {
     if (
@@ -143,28 +158,30 @@ const [validationError,setValidationError]=useState('')
   const handleNextStep = () => {
     const error = validateSelection();
     if (error) {
-        setValidationError(error)
+      setValidationError(error);
       return;
     }
+
     setStep(step + 1);
-    setValidationError('')
+    setValidationError("");
   };
 
   const handlePreviousStep = () => {
     setStep(step - 1);
+    setValidationError("");
   };
 
   const handleInputChange = (e) => {
-    setValidationError('')
-    console.log("formData", formData);
+    setValidationError("");
     const { name, value, checked } = e.target;
+    console.log("first", { formData });
     if (name === "selectedCities" || name === "selectedCenters") {
-      setFormData({
-        ...formData,
+      setFormData((prevData) => ({
+        ...prevData,
         [name]: checked
-          ? [...formData[name], value]
-          : formData[name].filter((item) => item !== value),
-      });
+          ? [...prevData[name], value]
+          : prevData[name].filter((item) => item !== value),
+      }));
     } else {
       setFormData({
         ...formData,
@@ -177,19 +194,38 @@ const [validationError,setValidationError]=useState('')
     const today = new Date().toISOString().split("T")[0];
     const regStartDate = new Date(formData.regStartDate);
     const regEndDate = new Date(formData.regEndDate);
-    const testDate = new Date(formData.testDate.split('T'));
+    const testDate = new Date(formData.testDate);
+  
+  
+    let errors = [];
+  
+    if (!formData.regStartDate) {
+      errors.push("Registration start date is required");
+    }
+    if (!formData.regEndDate) {
+      errors.push("Registration end date is required");
+    }
+    if (!formData.testDate) {
+      errors.push("Test date is required");
+    }
+  
 
-    if (regStartDate < new Date(today)) {
-      return "Registration start date must be today or later";
+    if (formData.regStartDate && regStartDate < new Date(today)) {
+      errors.push("Registration start date must be today or later");
     }
-    if (regEndDate < regStartDate) {
-      return "Registration end date must be after the registration start date";
+    if (formData.regEndDate && regEndDate < regStartDate) {
+      errors.push("Registration end date must be after the registration start date");
     }
-    if (regEndDate >= testDate) {
-      return "Registration End date must be before the test date";
+    if (formData.regEndDate && formData.testDateTime && regEndDate >= testDate) {
+      errors.push("Registration end date must be before the test date");
     }
-    return null;
+  
+    setValidationError(errors.length ? errors.join( '|  ') : null)
+    return errors.length ? errors.join(" |  ") : null;
+   
   };
+  
+
   const validateSelection = () => {
     if (step === 1) {
       if (!formData.selectedTest) {
@@ -198,7 +234,15 @@ const [validationError,setValidationError]=useState('')
       return null;
     }
   
-    if (step === 3 && formData.selectedCenters.length === 0) {
+   
+    if (step === 2) {
+      const dateValidationError = validateDates();
+      if (dateValidationError) {
+        return dateValidationError;
+      }
+    }
+  
+    if (step === 4 && formData.selectedCenters.length === 0) {
       return "Please select at least one center";
     }
   
@@ -208,16 +252,16 @@ const [validationError,setValidationError]=useState('')
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const error = validateDates();
+    const error = validateSelection();
     if (error) {
-      alert(error);
+        setValidationError(error);
       return;
     }
     console.log("FormData", formData);
-    addScheduledTest(formData)
+    addScheduledTest(formData);
+    props.setShowForm(false);
+    setValidationError("");
     alert("Form submitted successfully!");
-
-
   };
 
   return (
@@ -233,6 +277,7 @@ const [validationError,setValidationError]=useState('')
                 name="selectedTest"
                 value={formData.selectedTest}
                 onChange={handleInputChange}
+               
               >
                 <option value="">Select a test</option>
                 {allTests.map((test) => (
@@ -250,6 +295,54 @@ const [validationError,setValidationError]=useState('')
         )}
 
         {step === 2 && (
+          <>
+            <StyledFormGroup>
+              <StyledLabel>Registration Start Date</StyledLabel>
+              <StyledFormControl
+                type="date"
+                name="regStartDate"
+                value={formData.regStartDate}
+                onChange={handleInputChange}
+              />
+            </StyledFormGroup>
+            <StyledFormGroup>
+              <StyledLabel>Registration End Date</StyledLabel>
+              <StyledFormControl
+                type="date"
+                name="regEndDate"
+                value={formData.regEndDate}
+                onChange={handleInputChange}
+              />
+            </StyledFormGroup>
+            <StyledFormGroup>
+              <StyledLabel>Test Date </StyledLabel>
+              <StyledFormControl
+                type="date"
+                name="testDate"
+                value={formData.testDate}
+                onChange={handleInputChange}
+              />
+            </StyledFormGroup>
+            <StyledFormGroup>
+              <StyledLabel>Test Time</StyledLabel>
+              <StyledFormControl
+                type="time"
+                name="testTime"
+                value={formData.testTime}
+                onChange={handleInputChange}
+              />
+            </StyledFormGroup>
+            <p className="text-danger">{validationError}</p>
+            <StyledButton type="button" onClick={handlePreviousStep}>
+              Previous
+            </StyledButton>
+            <StyledButton type="button" onClick={handleNextStep}>
+              Next
+            </StyledButton>
+          </>
+        )}
+
+        {step === 3 && (
           <>
             <StyledFormGroup>
               <StyledLabel>Where do you want to take the test?</StyledLabel>
@@ -280,131 +373,83 @@ const [validationError,setValidationError]=useState('')
           </>
         )}
 
-        {step === 3 && formData.location === "selected" && (
+        {step === 4 && formData.location === "selected" && (
           <>
             <StyledFormGroup>
               <StyledLabel>Select Cities</StyledLabel>
-              <CenterContainer>
-                {allCities.map((city, index) => (
-                  <Col key={index + 1} xs={12} md={6} lg={4}>
-                    <Form.Check
-                      type="checkbox"
-                      label={city.city}
-                      value={city.city}
-                      checked={formData.selectedCities.includes(city.city)}
-                      onChange={handleInputChange}
-                      name="selectedCities"
-                    />
-                  </Col>
-                ))}
-              </CenterContainer>
+              {allCities.map((city) => (
+                <StyledFormGroup key={city.city}>
+                  <Form.Check
+                    type="checkbox"
+                    label={city.city}
+                    name="selectedCities"
+                    value={city.city}
+                    checked={formData.selectedCities.includes(city.city)}
+                    onChange={handleInputChange}
+                  />
+                </StyledFormGroup>
+              ))}
+              
             </StyledFormGroup>
-            <StyledFormGroup>
-              <StyledLabel>Select Centers</StyledLabel>
-              {noCentersMessage ? (
-                <NoCentersMessage>{noCentersMessage}</NoCentersMessage>
-              ) : (
-                <CenterContainer>
-                  {specificCenters.map((center) => (
-                    <CenterCheckbox
-                      key={center.test_center_id}
-                      xs={12}
-                      md={6}
-                      lg={4}
-                    >
-                      <Form.Check
-                        type="checkbox"
-                        label={`${center.institute_name} (${center.capacity})`}
-                        value={center.test_center_id}
-                        checked={formData.selectedCenters.includes(
-                          String(center.test_center_id)
-                        )}
-                        onChange={handleInputChange}
-                        name="selectedCenters"
-                      />
-                    </CenterCheckbox>
-                  ))}
-                </CenterContainer>
-              )}
-            </StyledFormGroup>
-            <p className="text-danger">{validationError}</p>
-            <StyledButton type="button" onClick={handlePreviousStep}>
-              Previous
-            </StyledButton>
-            <StyledButton type="button" onClick={handleNextStep}>
-              Next
-            </StyledButton>
-          </>
-        )}
 
-        {step === 3 && formData.location === "all" && (
-          <>
-            <StyledFormGroup>
+            {noCentersMessage ? 
+                <NoCentersMessage>{noCentersMessage}</NoCentersMessage>
+              : <StyledFormGroup>
               <StyledLabel>Select Centers</StyledLabel>
-              <CenterContainer>
-                {allCenters.map((center) => (
-                  <CenterCheckbox
-                    key={center.test_center_id}
-                    xs={12}
-                    md={6}
-                    lg={4}
-                  >
+              {specificCenters.length > 0 ? (
+                specificCenters.map((center) => (
+                  <StyledFormGroup key={center.test_center_id}>
                     <Form.Check
                       type="checkbox"
-                      label={`${center.institute_name}, ${center.city} (${center.capacity})`}
+                      label={`${center.institute_name}(${center.capacity})`}
+                      name="selectedCenters"
                       value={center.test_center_id}
                       checked={formData.selectedCenters.includes(
                         String(center.test_center_id)
                       )}
                       onChange={handleInputChange}
-                      name="selectedCenters"
                     />
-                  </CenterCheckbox>
-                ))}
-              </CenterContainer>
-            </StyledFormGroup>
+                  </StyledFormGroup>
+                ))
+              ) : (
+                <NoCentersMessage>
+                  No centers available for the selected date
+                </NoCentersMessage>
+              )}
+            </StyledFormGroup>}
             <p className="text-danger">{validationError}</p>
             <StyledButton type="button" onClick={handlePreviousStep}>
               Previous
             </StyledButton>
-            <StyledButton type="button" onClick={handleNextStep}>
-              Next
-            </StyledButton>
+            <StyledButton type="submit">Submit</StyledButton>
           </>
         )}
 
-        {step === 4 && (
+        {step === 4 && formData.location === "all" && (
           <>
             <StyledFormGroup>
-              <StyledLabel>Registration Start Date</StyledLabel>
-              <StyledFormControl
-                type="date"
-                name="regStartDate"
-                value={formData.regStartDate}
-                onChange={handleInputChange}
-                
-              />
+              <StyledLabel>Select Centers</StyledLabel>
+              {allCenters.length > 0 ? (
+                allCenters.map((center) => (
+                  <StyledFormGroup key={center.test_center_id}>
+                    <Form.Check
+                      type="checkbox"
+                      label={`${center.institute_name},${center.city}(${center.capacity})`}
+                      name="selectedCenters"
+                      value={center.test_center_id}
+                      checked={formData.selectedCenters.includes(String(center.test_center_id))}
+
+                      onChange={handleInputChange}
+                    />
+                  </StyledFormGroup>
+                ))
+              ) : (
+                <NoCentersMessage>
+                  No centers available for the selected date
+                </NoCentersMessage>
+              )}
             </StyledFormGroup>
-            <StyledFormGroup>
-              <StyledLabel>Registration End Date</StyledLabel>
-              <StyledFormControl
-                type="date"
-                name="regEndDate"
-                value={formData.regEndDate}
-                onChange={handleInputChange}
-         
-              />
-            </StyledFormGroup>
-            <StyledFormGroup>
-              <StyledLabel>Test Date and Time</StyledLabel>
-              <StyledFormControl
-                type="datetime-local"
-                name="testDateTime"
-                value={formData.testDateTime}
-                onChange={handleInputChange}
-              
-              />
-            </StyledFormGroup>
+            <p className="text-danger">{validationError}</p>
             <StyledButton type="button" onClick={handlePreviousStep}>
               Previous
             </StyledButton>

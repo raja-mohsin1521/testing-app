@@ -3,14 +3,11 @@ const pool = require("../../db_Connection/db");
 const addTestCenter = async (req, res) => {
   const { adminEmail, password, instituteName, address, capacity, city } = req.body;
 
-  
   try {
-   
     const emailCheckResult = await pool.query(
       'SELECT * FROM test_center WHERE admin_email = $1',
       [adminEmail]
     );
-    console.log('emailCheckResult', emailCheckResult.rows);
 
     if (emailCheckResult.rows.length > 0) {
       return res.status(400).json({
@@ -19,7 +16,6 @@ const addTestCenter = async (req, res) => {
       });
     }
 
-    // Insert new test center
     const result = await pool.query(
       'INSERT INTO test_center (admin_email, password, institute_name, address, capacity, city) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
       [adminEmail, password, instituteName, address, capacity, city]
@@ -79,7 +75,7 @@ const updateTestCenter = async (req, res) => {
 
 const deleteTestCenter = async (req, res) => {
   const { id } = req.body;
-console.log('delete req.body', req.body)
+  
   try {
     const result = await pool.query('DELETE FROM test_center WHERE test_center_id = $1 RETURNING *', [id]);
     if (result.rows.length > 0) {
@@ -106,11 +102,12 @@ console.log('delete req.body', req.body)
 const getUpcomingTestCenters = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT tc.institute_name, t.test_name, t.subject, st.test_date_time, tc.capacity
+      `SELECT tc.institute_name, t.test_name, t.subject, 
+              st.test_date, st.test_time, tc.capacity
        FROM test_center tc
        JOIN scheduled_test st ON tc.test_center_id = st.test_center_id
        JOIN test t ON st.test_id = t.test_id
-       WHERE st.test_date_time >= CURRENT_DATE`
+       WHERE st.test_date >= CURRENT_DATE`
     );
 
     if (result.rows.length > 0) {
@@ -132,7 +129,6 @@ const getUpcomingTestCenters = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   addTestCenter,

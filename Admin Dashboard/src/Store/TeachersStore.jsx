@@ -1,7 +1,8 @@
-
 import create from 'zustand';
 
-export const useStore = create((set) => ({
+const useStore = create((set) => ({
   teachers: [],
   setTeachers: (teachers) => set({ teachers }),
 }));
+
+export { useStore }; // Named export

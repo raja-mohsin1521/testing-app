@@ -1,12 +1,24 @@
-import React from 'react';
-import { Table, Container, Row, Col } from 'react-bootstrap';
-import styled from 'styled-components';
-import { BookingStore } from '../Store/TestCenterStore'; 
+import React from "react";
+import { Table, Container, Row, Col } from "react-bootstrap";
+import styled from "styled-components";
+import { BookingStore } from "../Store/TestCenterStore";
 
 const TestCenterBookingTable = () => {
-  
-  const bookings = BookingStore((state) => state.data); 
-  const length = bookings ? bookings.length : 0; // default to 0 if bookings is undefined
+  const bookings = BookingStore((state) => state.data);
+  const length = bookings ? bookings.length : 0; // Default to 0 if bookings is undefined
+
+  // Sort bookings by test_date and test_time
+  const sortedBookings = bookings.sort((a, b) => {
+    const dateA = new Date(a.test_date);
+    const dateB = new Date(b.test_date);
+    
+    // First, sort by test_date
+    if (dateA < dateB) return -1;
+    if (dateA > dateB) return 1;
+
+    // If dates are equal, sort by test_time
+    return a.test_time.localeCompare(b.test_time);
+  });
 
   return (
     <Container fluid>
@@ -22,10 +34,10 @@ const TestCenterBookingTable = () => {
               <thead>
                 <tr>
                   <th>No</th>
-                  <th>Test Date</th>
-                  <th>Test Center</th>
                   <th>Test Name</th>
-                  <th>Booking Status</th>
+                  <th>Test Center</th>
+                  <th>Test Date</th>
+                  <th>Test Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -36,13 +48,15 @@ const TestCenterBookingTable = () => {
                     </td>
                   </tr>
                 ) : (
-                  bookings.map((booking, index) => (
+                  sortedBookings.map((booking, index) => (
                     <tr key={booking.id}>
                       <td data-label="No">{index + 1}</td>
-                      <td data-label="Test Date">{booking.testDate}</td>
-                      <td data-label="Test Center">{booking.testCenter}</td>
-                      <td data-label="Test Name">{booking.testName}</td>
-                      <td data-label="Booking Status">{booking.status}</td>
+                      <td data-label="Test Name">{booking.test_name}</td>
+                      <td data-label="Test Center">{booking.institute_name}</td>
+                      <td data-label="Test Date">
+                        {new Date(booking.test_date).toISOString().split("T")[0]}
+                      </td>
+                      <td data-label="Test Time">{booking.test_time}</td>
                     </tr>
                   ))
                 )}
@@ -64,8 +78,9 @@ const StyledTable = styled(Table)`
   border: 1px solid #dee2e6;
   border-radius: 0.25rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  
-  th, td {
+
+  th,
+  td {
     text-align: center;
     vertical-align: middle;
   }

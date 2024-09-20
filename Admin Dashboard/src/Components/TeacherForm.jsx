@@ -18,7 +18,6 @@ const schema = z.object({
   questions: z.string().min(1, { message: "Number of questions is required" }),
   hiredate: z.string().min(1, { message: "Hire date is required" }),
   specialization: z.string().min(1, { message: "Specialization is required" }),
-  image: z.optional(z.string()), 
 });
 
 const StyledFormContainer = styled.div`
@@ -67,35 +66,6 @@ const StyledButton = styled(Button)`
   margin-right: 10px;
 `;
 
-const ImageUploadContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-`;
-
-const ImagePreview = styled.div`
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  overflow: hidden;
-  background-color: #e9ecef;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  cursor: pointer;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
-
-const HiddenFileInput = styled.input`
-  display: none;
-`;
-
 const TeacherForm = (props) => {
   const { createTeacher } = useTeacher();
   const [teacherData, setTeacherData] = useState({
@@ -108,10 +78,8 @@ const TeacherForm = (props) => {
     questions: '',
     hiredate: '',
     specialization: '',
-    image: null,
   });
 
-  const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
 
   const handleInputChange = (e) => {
@@ -120,21 +88,6 @@ const TeacherForm = (props) => {
       ...teacherData,
       [name]: value,
     });
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTeacherData({
-          ...teacherData,
-          image: reader.result.split(',')[1], // Store base64 data without the prefix
-        });
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -147,9 +100,19 @@ const TeacherForm = (props) => {
         id: Date.now().toString(),
       });
 
-     
+      setTeacherData({
+        name: '',
+        email: '',
+        password: '',
+        dateofbirth: '',
+        phone: '',
+        address: '',
+        questions: '',
+        hiredate: '',
+        specialization: '',
+      });
       setErrors({});
-      props.setShowForm(true); 
+      props.setShowForm(false); 
     } catch (err) {
       const formattedErrors = {};
       err.errors.forEach((error) => {
@@ -170,32 +133,13 @@ const TeacherForm = (props) => {
       questions: '',
       hiredate: '',
       specialization: '',
-      image: null,
     });
-    setImagePreview(null);
     setErrors({});
   };
 
   return (
     <StyledFormContainer>
       <FormHeading>Add New Teacher</FormHeading>
-
-      <ImageUploadContainer>
-        <ImagePreview onClick={() => document.getElementById('imageUpload').click()}>
-          {imagePreview ? (
-            <img src={imagePreview} alt="Teacher Preview" />
-          ) : (
-            <span>Upload Image</span>
-          )}
-        </ImagePreview>
-        <HiddenFileInput
-          id="imageUpload"
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-        />
-      </ImageUploadContainer>
-
       <Form onSubmit={handleSubmit}>
         <Row>
           <Col md={6} xs={12}>

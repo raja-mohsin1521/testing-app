@@ -4,6 +4,7 @@ const cors = require("cors");
 const multer = require("multer");
 const studentAuthRoutes = require("./Routes/Student/auth-routes");
 const teacherAuthRoutes = require("./Routes/Teacher/auth-routes");
+const adminAuthRoute = require("./Routes/Admin/adminAuthRoutes");
 const adminHomeRoute = require("./Routes/Admin/adminHomeRoute");
 const adminTeacherRoutes = require('./Routes/Admin/adminTeacherRoutes');
 const adminTestCenterRoutes = require('./Routes/Admin/adminTestCenterRoutes');
@@ -30,6 +31,7 @@ const upload = multer({
 
 app.use("/student", studentAuthRoutes);
 app.use("/teacher", teacherAuthRoutes);
+app.use("/admin/auth", adminAuthRoute);
 app.use("/admin/home", adminHomeRoute);
 app.use("/admin/schedule-test", adminScheduleTestRoutes);
 app.use("/admin/teacher", adminTeacherRoutes);
