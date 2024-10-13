@@ -6,18 +6,23 @@ const getStatistics = async (req, res) => {
     const totalTests = parseInt(totalTestsResult.rows[0].total_tests);
 
     const todayTestsResult = await pool.query(`
-      SELECT COUNT(*) AS booked_today
+      SELECT COUNT(*) AS booked_this_week
       FROM scheduled_test
-      WHERE test_date = CURRENT_DATE
+      WHERE test_date >= CURRENT_DATE 
+        AND test_date < CURRENT_DATE + 7;
     `);
-    const todayTests = parseInt(todayTestsResult.rows[0].booked_today);
+    
+    const bookedThisWeek = parseInt(todayTestsResult.rows[0].booked_this_week);
+    
 
-    const upcomingTestsResult = await pool.query(`
-      SELECT COUNT(*) AS booked_upcoming
-      FROM scheduled_test
-      WHERE (test_date + test_time) > CURRENT_TIMESTAMP
-    `);
-    const upcomingTests = parseInt(upcomingTestsResult.rows[0].booked_upcoming);
+   const upcomingTestsResult = await pool.query(`
+  SELECT COUNT(DISTINCT (test_date + test_time)) AS booked_upcoming
+  FROM scheduled_test
+  WHERE (test_date + test_time) > CURRENT_TIMESTAMP
+`);
+
+const upcomingTests = parseInt(upcomingTestsResult.rows[0].booked_upcoming);
+
 
     const totalStudentsResult = await pool.query("SELECT COUNT(*) AS total_students FROM student");
     const totalStudents = parseInt(totalStudentsResult.rows[0].total_students);
@@ -101,7 +106,7 @@ const totalQuestions = parseInt(totalQuestionsResult.rows[0].total_questions) ||
 
     res.json({
       totalTests,
-      todayTests,
+      bookedThisWeek,
       upcomingTests,
       totalStudents,
       verifiedStudents,

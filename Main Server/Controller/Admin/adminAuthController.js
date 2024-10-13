@@ -10,7 +10,7 @@ const bcrypt = require('bcryptjs');
 
 const updateAdminPassword = async (req, res) => {
     const { email, newPassword } = req.body;
-  
+  console.log('req.body', req.body)
     if (!email || !newPassword) {
       return res.status(400).json({ error: "Email and new password are required" });
     }
@@ -33,6 +33,7 @@ const updateAdminPassword = async (req, res) => {
 
   const verifyAdminLogin = async (req, res) => {
     const { email, password } = req.body;
+    console.log('req.body', req.body)
   console.log('req.body', req.body)
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });

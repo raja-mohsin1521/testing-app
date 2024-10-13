@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const multer = require("multer");
 const studentAuthRoutes = require("./Routes/Student/auth-routes");
-const teacherAuthRoutes = require("./Routes/Teacher/auth-routes");
+const teacherAuthRoutes = require("./Routes/Teacher/routes");
 const adminAuthRoute = require("./Routes/Admin/adminAuthRoutes");
 const adminHomeRoute = require("./Routes/Admin/adminHomeRoute");
 const adminTeacherRoutes = require('./Routes/Admin/adminTeacherRoutes');
@@ -15,7 +15,7 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:5173', 
+  origin: '*', 
   methods: ['GET', 'POST', 'PUT', 'DELETE'], 
   allowedHeaders: ['Content-Type', 'Authorization'] 
 }));
