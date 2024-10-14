@@ -1,43 +1,63 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Container, Row, Col } from 'react-bootstrap';
-import styled from 'styled-components';
-import { useStore } from '../Store/TeachersStore';
-import useTeacher from '../Hooks/useTeacher';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Table, Button, Container, Row, Col } from "react-bootstrap";
+import styled from "styled-components";
+import { useStore } from "../Store/TeachersStore";
+import useTeacher from "../Hooks/useTeacher";
+import { useNavigate } from "react-router-dom";
+
 const TeachersTable = () => {
-
-  const {readTeachers,deleteTeacher}=useTeacher()
+  const { readTeachers, deleteTeacher } = useTeacher();
+  
   useEffect(() => {
-   
-     readTeachers();
-    
-    },[]);
+    readTeachers();
+  }, []);
 
-  // Example usage
   const { teachers } = useStore((state) => ({
     teachers: state.teachers,
   }));
-  
-  // Local state to manage table data
+
   const [localTeachers, setLocalTeachers] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
 
   useEffect(() => {
-    // Set local state with the initial teachers data from the store
     setLocalTeachers(teachers);
   }, [teachers]);
+  
   const navigate = useNavigate();
-  // Handle the view action
-  const handleView = (teacher) => {
-    console.log('View', teacher);
-    navigate(`/teachers/${teacher}`)
+
+  const handleView = (teacherId) => {
+    navigate(`/teachers/${teacherId}`);
   };
 
-  // Handle the delete action locally
   const handleDelete = (teacherId) => {
-    const updatedTeachers = localTeachers.filter((teacher) => teacher.id !== teacherId);
-    deleteTeacher(teacherId)
-    setLocalTeachers(updatedTeachers); // Update the local state
-    console.log('Deleted teacher with id:', teacherId);
+    const updatedTeachers = localTeachers.filter((teacher) => teacher.teacher_id !== teacherId);
+    deleteTeacher(teacherId);
+    setLocalTeachers(updatedTeachers);
+  };
+
+  const handleSort = (key) => {
+    let direction = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
+    }
+
+    const sortedTeachers = [...localTeachers].sort((a, b) => {
+      if (a[key] < b[key]) {
+        return direction === "ascending" ? -1 : 1;
+      }
+      if (a[key] > b[key]) {
+        return direction === "ascending" ? 1 : -1;
+      }
+      return 0;
+    });
+
+    setSortConfig({ key, direction });
+    setLocalTeachers(sortedTeachers);
+  };
+
+  const getSortArrow = (key) => {
+    if (sortConfig.key !== key) return null;
+    return sortConfig.direction === "ascending" ? " ▲" : " ▼";
   };
 
   return (
@@ -53,42 +73,52 @@ const TeachersTable = () => {
             <StyledTable striped bordered hover>
               <thead>
                 <tr>
-                  <th>ID</th>
-               
-                  <th>Email</th>
-                  <th>Specialization
-                  </th>
-                  <th>Total Questions</th>
-                  <th>Added Questions</th>
+                  <SortableTh onClick={() => handleSort("id")}>ID {getSortArrow("id")}</SortableTh>
+                  <SortableTh onClick={() => handleSort("email")}>
+                    Email {getSortArrow("email")}
+                  </SortableTh>
+                  <SortableTh onClick={() => handleSort("subject_specialization")}>
+                    Specialization {getSortArrow("subject_specialization")}
+                  </SortableTh>
+                  <SortableTh onClick={() => handleSort("required_questions")}>
+                    Total Questions {getSortArrow("required_questions")}
+                  </SortableTh>
+                  <SortableTh onClick={() => handleSort("total_questions")}>
+                    Added Questions {getSortArrow("total_questions")}
+                  </SortableTh>
                   <th colSpan={2}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {localTeachers.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center">
-                      <NoDataMessage className="text-center">No teachers found</NoDataMessage>
+                    <td colSpan="7" className="text-center">
+                      <NoDataMessage>No teachers found</NoDataMessage>
                     </td>
                   </tr>
                 ) : (
-                  localTeachers.map((teacher,index) => (
-                    <tr key={teacher.teacher_id}>
-                      <td>{index+1}</td>
-                   
+                  localTeachers.map((teacher, index) => (
+                    <StyledRow key={teacher.teacher_id}>
+                      <td>{index + 1}</td>
                       <td>{teacher.email}</td>
-                      <td>{teacher.subject_specialization
-                      }</td>
+                      <td>{teacher.subject_specialization}</td>
                       <td>{teacher.required_questions}</td>
                       <td>{teacher.total_questions}</td>
                       <td>
-                        <StyledButton variant="dark" className='mx-2 my-2' onClick={() => handleView(teacher.teacher_id)}>
+                        <StyledButton
+                          variant="dark"
+                          onClick={() => handleView(teacher.teacher_id)}
+                        >
                           View
                         </StyledButton>
-                        <StyledButton variant="danger" onClick={() => handleDelete(teacher.teacher_id)}>
+                        <StyledButton
+                          variant="danger"
+                          onClick={() => handleDelete(teacher.teacher_id)}
+                        >
                           Delete
                         </StyledButton>
                       </td>
-                    </tr>
+                    </StyledRow>
                   ))
                 )}
               </tbody>
@@ -104,10 +134,15 @@ const Heading = styled.h3`
   text-align: center;
   margin-bottom: 20px;
   color: #343a40;
+  font-weight: bold;
 `;
 
 const TableContainer = styled.div`
   overflow-x: auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 `;
 
 const StyledTable = styled(Table)`
@@ -115,10 +150,36 @@ const StyledTable = styled(Table)`
   border: 1px solid #dee2e6;
   border-radius: 0.25rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  
-  th, td {
+
+  th,
+  td {
     text-align: center;
     vertical-align: middle;
+    padding: 12px;
+  }
+  th {
+    background-color: #343a40; /* Bootstrap primary color */
+    color: white;
+
+      color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  th:hover {
+    background-color: black; /* Darker blue on hover */
+  }
+  th {
+
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
 
   @media (max-width: 768px) {
@@ -155,7 +216,22 @@ const StyledTable = styled(Table)`
       padding-left: 10px;
       font-weight: bold;
       text-align: left;
+      color: #6c757d;
     }
+  }
+`;
+
+const SortableTh = styled.th`
+  &:hover {
+    background-color: #495057;
+    color: #ffffff;
+  }
+`;
+
+const StyledRow = styled.tr`
+  &:hover {
+    background-color: #f1f1f1;
+    transition: background-color 0.3s ease;
   }
 `;
 
@@ -167,6 +243,12 @@ const NoDataMessage = styled.div`
 
 const StyledButton = styled(Button)`
   margin: 0 5px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 export default TeachersTable;

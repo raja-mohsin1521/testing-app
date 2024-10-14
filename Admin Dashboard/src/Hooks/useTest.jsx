@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import  TestStore  from '../Store/TestStore';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import TestStore from "../Store/TestStore";
 
-const API_URL = 'http://localhost:5000/admin/test';
+const API_URL = `${import.meta.env.VITE_SERVER}/admin/test`;
 
 const useTest = () => {
   const [loading, setLoading] = useState(false);
@@ -13,10 +13,9 @@ const useTest = () => {
     try {
       const response = await axios.get(`${API_URL}/readall`);
       TestStore.getState().setData(response.data.data); // Update Zustand store
-      console.log('response a', response);
+      console.log("response a", response);
       setError(null);
     } catch (error) {
-       
       setError(error.response.data.message);
     } finally {
       setLoading(false);
@@ -27,9 +26,9 @@ const useTest = () => {
     setLoading(true);
     try {
       const response = await axios.post(`${API_URL}/create`, TestData);
-      console.log('response b', response);
-      fetchTests(); 
-     
+      console.log("response b", response);
+      fetchTests();
+
       setError(null);
     } catch (error) {
       setError(error.message);
@@ -41,11 +40,11 @@ const useTest = () => {
   const updateTest = async (TestData) => {
     setLoading(true);
     try {
-      console.log('first', TestData)
+      console.log("first", TestData);
       const response = await axios.put(`${API_URL}/update`, TestData);
-      fetchTests(); 
-      
-    console.log('response', response)
+      fetchTests();
+
+      console.log("response", response);
       setError(null);
     } catch (error) {
       setError(error.message);
@@ -58,9 +57,9 @@ const useTest = () => {
     setLoading(true);
     try {
       await axios.delete(`${API_URL}/delete`, { data: { id } });
-      console.log('response');
-      fetchTests(); 
-    
+      console.log("response");
+      fetchTests();
+
       setError(null);
     } catch (error) {
       setError(error.message);
@@ -69,11 +68,8 @@ const useTest = () => {
     }
   };
 
-
-
   useEffect(() => {
     fetchTests();
-
   }, []);
 
   return {
@@ -83,7 +79,7 @@ const useTest = () => {
     addTest,
     updateTest,
     deleteTest,
-    fetchTests
+    fetchTests,
   };
 };
 

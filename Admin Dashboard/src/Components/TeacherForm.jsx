@@ -1,19 +1,25 @@
-// src/Components/TeacherForm.js
-import React, { useState } from 'react';
-import { Button, Form, Col, Row } from 'react-bootstrap';
-import styled from 'styled-components';
-import { z } from 'zod';
-import useTeacher from '../Hooks/useTeacher';
+import React, { useState } from "react";
+import { Button, Form, Col, Row } from "react-bootstrap";
+import styled from "styled-components";
+import { z } from "zod";
+import useTeacher from "../Hooks/useTeacher";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string()
+  password: z
+    .string()
     .min(8, { message: "Password must be at least 8 characters long" })
-    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-    .regex(/[\W_]/, { message: "Password must contain at least one special character" }),
+    .regex(/[A-Z]/, {
+      message: "Password must contain at least one uppercase letter",
+    })
+    .regex(/[\W_]/, {
+      message: "Password must contain at least one special character",
+    }),
   dateofbirth: z.string().min(1, { message: "Date of Birth is required" }),
-  phone: z.string().regex(/^\d+$/, { message: "Phone number must be a valid number" }),
+  phone: z
+    .string()
+    .regex(/^\d+$/, { message: "Phone number must be a valid number" }),
   address: z.string().min(1, { message: "Address is required" }),
   questions: z.string().min(1, { message: "Number of questions is required" }),
   hiredate: z.string().min(1, { message: "Hire date is required" }),
@@ -51,7 +57,7 @@ const StyledFormControl = styled(Form.Control)`
   }
 
   ${({ as }) =>
-    as === 'textarea' &&
+    as === "textarea" &&
     `
       width: 100%;
       resize: vertical;
@@ -69,15 +75,15 @@ const StyledButton = styled(Button)`
 const TeacherForm = (props) => {
   const { createTeacher } = useTeacher();
   const [teacherData, setTeacherData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    dateofbirth: '',
-    phone: '',
-    address: '',
-    questions: '',
-    hiredate: '',
-    specialization: '',
+    name: "",
+    email: "",
+    password: "",
+    dateofbirth: "",
+    phone: "",
+    address: "",
+    questions: "",
+    hiredate: "",
+    specialization: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -101,18 +107,18 @@ const TeacherForm = (props) => {
       });
 
       setTeacherData({
-        name: '',
-        email: '',
-        password: '',
-        dateofbirth: '',
-        phone: '',
-        address: '',
-        questions: '',
-        hiredate: '',
-        specialization: '',
+        name: "",
+        email: "",
+        password: "",
+        dateofbirth: "",
+        phone: "",
+        address: "",
+        questions: "",
+        hiredate: "",
+        specialization: "",
       });
       setErrors({});
-      props.setShowForm(false); 
+      props.setShowForm(false);
     } catch (err) {
       const formattedErrors = {};
       err.errors.forEach((error) => {
@@ -124,15 +130,15 @@ const TeacherForm = (props) => {
 
   const handleClear = () => {
     setTeacherData({
-      name: '',
-      email: '',
-      password: '',
-      dateofbirth: '',
-      phone: '',
-      address: '',
-      questions: '',
-      hiredate: '',
-      specialization: '',
+      name: "",
+      email: "",
+      password: "",
+      dateofbirth: "",
+      phone: "",
+      address: "",
+      questions: "",
+      hiredate: "",
+      specialization: "",
     });
     setErrors({});
   };
@@ -152,7 +158,9 @@ const TeacherForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.name}
               />
-              <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.name}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
           <Col md={6} xs={12}>
@@ -165,7 +173,9 @@ const TeacherForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.email}
               />
-              <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.email}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
         </Row>
@@ -180,7 +190,9 @@ const TeacherForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.password}
               />
-              <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.password}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
           <Col md={6} xs={12}>
@@ -193,7 +205,9 @@ const TeacherForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.dateofbirth}
               />
-              <Form.Control.Feedback type="invalid">{errors.dateofbirth}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.dateofbirth}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
         </Row>
@@ -208,7 +222,9 @@ const TeacherForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.phone}
               />
-              <Form.Control.Feedback type="invalid">{errors.phone}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.phone}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
           <Col md={6} xs={12}>
@@ -221,7 +237,9 @@ const TeacherForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.questions}
               />
-              <Form.Control.Feedback type="invalid">{errors.questions}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.questions}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
         </Row>
@@ -236,7 +254,9 @@ const TeacherForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.address}
               />
-              <Form.Control.Feedback type="invalid">{errors.address}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.address}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
           <Col md={6} xs={12}>
@@ -249,7 +269,9 @@ const TeacherForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.hiredate}
               />
-              <Form.Control.Feedback type="invalid">{errors.hiredate}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.hiredate}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
         </Row>
@@ -264,13 +286,17 @@ const TeacherForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.specialization}
               />
-              <Form.Control.Feedback type="invalid">{errors.specialization}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.specialization}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
         </Row>
         <div className="d-flex justify-content-center">
           <StyledButton type="submit">Save</StyledButton>
-          <StyledButton type="button" variant="secondary" onClick={handleClear}>Clear</StyledButton>
+          <StyledButton type="button" variant="secondary" onClick={handleClear}>
+            Clear
+          </StyledButton>
         </div>
       </Form>
     </StyledFormContainer>

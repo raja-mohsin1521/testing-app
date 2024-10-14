@@ -37,10 +37,10 @@ const TestTable = () => {
     number_of_questions: "",
   });
   const [errors, setErrors] = useState({});
-  const [showMoreId, setShowMoreId] = useState(null); // State to track read more option
+  const [showMoreId, setShowMoreId] = useState(null); 
 
   const handleEdit = (test) => {
-    setEditingId(test.test_id); // Use test_id here
+    setEditingId(test.test_id);
     setEditData({
       name: test.test_name,
       subject: test.subject,
@@ -53,10 +53,10 @@ const TestTable = () => {
 
   const handleSave = () => {
     try {
-      // Validate data with Zod schema
+     
       schema.parse(editData);
 
-      // If validation passes, update the test
+      
       if (editingId) {
         updateTest({
           id: editingId,
@@ -77,7 +77,7 @@ const TestTable = () => {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        // Collect validation errors and set them in the state
+   
         const formattedErrors = {};
         error.errors.forEach((err) => {
           formattedErrors[err.path[0]] = err.message;

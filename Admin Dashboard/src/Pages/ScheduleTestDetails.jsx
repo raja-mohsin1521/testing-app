@@ -434,6 +434,7 @@ const ScheduleTestDetails = () => {
         <>
           <SubHeading>Registered Students</SubHeading>
           <ScrollableContainer ref={tableRef}>
+            <h5>{selectedCenter.centerName} ({selectedCenter.centerCity})</h5>
             <StyledTable striped bordered hover responsive>
               <thead>
                 <tr>

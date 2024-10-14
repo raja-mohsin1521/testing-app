@@ -1,16 +1,18 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = 'http://localhost:5000/admin/auth'; 
+const API_URL = `${import.meta.env.VITE_SERVER}/admin/auth`;
 
 export const adminLogin = async (email, password) => {
   try {
+
     const response = await axios.post(`${API_URL}/login`, {
       email,
       password,
     });
-    return response.data; 
+    console.log('response>>>>>>>>>>>>>>>>>>>>>>>', response)
+    return response.data;
   } catch (error) {
-    throw error.response.data; 
+    throw error.response.data;
   }
 };
 
@@ -20,8 +22,8 @@ export const updateAdminPassword = async (email, newPassword) => {
       email,
       newPassword,
     });
-    return response.data; 
+    return response.data;
   } catch (error) {
-    throw error.response.data; 
+    throw error.response.data;
   }
 };

@@ -4,5 +4,8 @@ const useStore = create((set) => ({
   teachers: [],
   setTeachers: (teachers) => set({ teachers }),
 }));
-
-export { useStore }; // Named export
+const useTeacherDetails = create((set) => ({
+  teacherDetails: [],
+  setTeacherDetails: (teacherDetails) => set({ teacherDetails }),
+}));
+export { useStore,useTeacherDetails }; // Named export

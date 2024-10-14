@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { TestCenterStore, BookingStore } from '../Store/TestCenterStore';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { TestCenterStore, BookingStore } from "../Store/TestCenterStore";
 
-const API_URL = 'http://localhost:5000/admin/testcenter';
+const API_URL = `${import.meta.env.VITE_SERVER}/admin/testcenter`;
 
 const useTestCenter = () => {
   const [loading, setLoading] = useState(false);
@@ -12,8 +12,8 @@ const useTestCenter = () => {
     setLoading(true);
     try {
       const response = await axios.get(`${API_URL}/readall`);
-      TestCenterStore.getState().setData(response.data.data); // Update Zustand store
-      console.log('response a', response);
+      TestCenterStore.getState().setData(response.data.data);
+      console.log("response a", response);
       setError(null);
     } catch (error) {
       setError(error.message);
@@ -26,9 +26,9 @@ const useTestCenter = () => {
     setLoading(true);
     try {
       const response = await axios.post(`${API_URL}/create`, testCenterData);
-      console.log('response b', response);
-      fetchTestCenters(); // Refresh the test centers
-      fetchTestCenterDetails(); // Refresh the test center details
+      console.log("response b", response);
+      fetchTestCenters(); 
+      fetchTestCenterDetails(); 
       setError(null);
     } catch (error) {
       setError(error.message);
@@ -40,11 +40,11 @@ const useTestCenter = () => {
   const updateTestCenter = async (testCenterData) => {
     setLoading(true);
     try {
-      console.log('first', testCenterData)
+      console.log("first", testCenterData);
       const response = await axios.put(`${API_URL}/update`, testCenterData);
-      fetchTestCenters(); // Refresh the test centers
-      fetchTestCenterDetails(); // Refresh the test center details
-    console.log('response', response)
+      fetchTestCenters(); 
+      fetchTestCenterDetails(); 
+      console.log("response", response);
       setError(null);
     } catch (error) {
       setError(error.message);
@@ -57,9 +57,9 @@ const useTestCenter = () => {
     setLoading(true);
     try {
       await axios.delete(`${API_URL}/delete`, { data: { id } });
-      console.log('response');
-      fetchTestCenters(); // Refresh the test centers
-      fetchTestCenterDetails(); // Refresh the test center details
+      console.log("response");
+      fetchTestCenters(); 
+      fetchTestCenterDetails(); 
       setError(null);
     } catch (error) {
       setError(error.message);
@@ -72,11 +72,11 @@ const useTestCenter = () => {
     setLoading(true);
     try {
       const response = await axios.get(`${API_URL}/details`);
-      console.log('response:', response);
-      BookingStore.getState().setData(response.data.data); 
+      console.log("response:", response);
+      BookingStore.getState().setData(response.data.data);
       setError(null);
     } catch (error) {
-      console.error('Error fetching test center details:', error);
+      console.error("Error fetching test center details:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -97,7 +97,7 @@ const useTestCenter = () => {
     updateTestCenter,
     deleteTestCenter,
     fetchTestCenterDetails,
-    fetchTestCenters
+    fetchTestCenters,
   };
 };
 

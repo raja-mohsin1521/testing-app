@@ -1,20 +1,27 @@
-import React, { useState } from 'react';
-import { Table, Button, Container, Row, Col } from 'react-bootstrap';
-import styled from 'styled-components';
-import { FaEye, FaEyeSlash } from 'react-icons/fa'; 
-import useTestCenter from '../Hooks/useTestCenter';
-import { TestCenterStore } from '../Store/TestCenterStore';
+import React, { useState } from "react";
+import { Table, Button, Container, Row, Col } from "react-bootstrap";
+import styled from "styled-components";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import useTestCenter from "../Hooks/useTestCenter";
+import { TestCenterStore } from "../Store/TestCenterStore";
 
 const TestCenterTable = () => {
   const { testCenters } = TestCenterStore((state) => ({
-    testCenters: state.data
+    testCenters: state.data,
   }));
 
   const { updateTestCenter, deleteTestCenter } = useTestCenter();
 
   const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({ admin_email: '', institute_name: '', address: '', password: '', capacity: '' });
-  const [showPassword, setShowPassword] = useState(false); 
+  const [editData, setEditData] = useState({
+    admin_email: "",
+    institute_name: "",
+    address: "",
+    password: "",
+    capacity: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "ascending" });
 
   const handleEdit = (testCenter) => {
     setEditingId(testCenter.test_center_id);
@@ -23,18 +30,14 @@ const TestCenterTable = () => {
       institute_name: testCenter.institute_name,
       address: testCenter.address,
       password: testCenter.password,
-      capacity: testCenter.capacity, // Include capacity
+      capacity: testCenter.capacity,
     });
   };
 
   const handleSave = () => {
     updateTestCenter({
       id: editingId,
-      admin_email: editData.admin_email,
-      institute_name: editData.institute_name,
-      address: editData.address,
-      password: editData.password,
-      capacity: editData.capacity, // Include capacity
+      ...editData,
     });
     setEditingId(null);
   };
@@ -52,6 +55,22 @@ const TestCenterTable = () => {
     deleteTestCenter(id);
   };
 
+  const handleSort = (key) => {
+    let direction = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
+    }
+
+    const sortedCenters = [...testCenters].sort((a, b) => {
+      if (a[key] < b[key]) return direction === "ascending" ? -1 : 1;
+      if (a[key] > b[key]) return direction === "ascending" ? 1 : -1;
+      return 0;
+    });
+
+    setSortConfig({ key, direction });
+    // Update the store or local state as needed with sortedCenters
+  };
+
   return (
     <Container fluid>
       <Row className="mb-3">
@@ -65,12 +84,12 @@ const TestCenterTable = () => {
             <StyledTable striped bordered hover>
               <thead>
                 <tr>
-                  <th>Id</th>
-                  <th>Admin Email</th>
-                  <th>Institute</th>
-                  <th>Address</th>
-                  <th>Password</th>
-                  <th>Capacity</th> {/* Add Capacity column */}
+                  <th onClick={() => handleSort("test_center_id")}>Id</th>
+                  <th onClick={() => handleSort("admin_email")}>Admin Email</th>
+                  <th onClick={() => handleSort("institute_name")}>Institute</th>
+                  <th onClick={() => handleSort("address")}>Address</th>
+                  <th onClick={() => handleSort("password")}>Password</th>
+                  <th onClick={() => handleSort("capacity")}>Capacity</th>
                   <th colSpan={2}>Actions</th>
                 </tr>
               </thead>
@@ -123,9 +142,9 @@ const TestCenterTable = () => {
                       </td>
                       <td data-label="Password">
                         {editingId === testCenter.test_center_id ? (
-                          <div style={{ position: 'relative', display: 'inline-block' }}>
+                          <div style={{ position: "relative", display: "inline-block" }}>
                             <input
-                              type={showPassword ? 'text' : 'password'}
+                              type={showPassword ? "text" : "password"}
                               name="password"
                               value={editData.password}
                               onChange={handleChange}
@@ -135,7 +154,7 @@ const TestCenterTable = () => {
                             </EyeIcon>
                           </div>
                         ) : (
-                          '********'
+                          "********"
                         )}
                       </td>
                       <td data-label="Capacity">
@@ -153,20 +172,20 @@ const TestCenterTable = () => {
                       <td>
                         {editingId === testCenter.test_center_id ? (
                           <>
-                            <StyledButton className="my-2" variant="success" onClick={handleSave}>
+                            <StyledButton variant="success" onClick={handleSave}>
                               Save
                             </StyledButton>
-                            <StyledButton className="my-2" variant="secondary" onClick={() => setEditingId(null)}>
+                            <StyledButton variant="secondary" onClick={() => setEditingId(null)}>
                               Cancel
                             </StyledButton>
                           </>
                         ) : (
-                          <StyledButton className="my-2" variant="warning" onClick={() => handleEdit(testCenter)}>
+                          <StyledButton variant="warning" onClick={() => handleEdit(testCenter)}>
                             Edit
                           </StyledButton>
                         )}
                         {editingId !== testCenter.test_center_id && (
-                          <StyledButton className="my-2" variant="danger" onClick={() => handleDelete(testCenter.test_center_id)}>
+                          <StyledButton variant="danger" onClick={() => handleDelete(testCenter.test_center_id)}>
                             Delete
                           </StyledButton>
                         )}
@@ -184,8 +203,9 @@ const TestCenterTable = () => {
 };
 
 const TableContainer = styled.div`
-  overflow-y: auto; /* Add vertical scrolling */
-  max-height: 500px; /* Set a fixed height */
+  overflow-y: auto;
+  max-height: 500px;
+  width: 100%; /* Ensure full width */
 `;
 
 const StyledTable = styled(Table)`
@@ -193,46 +213,31 @@ const StyledTable = styled(Table)`
   border: 1px solid #dee2e6;
   border-radius: 0.25rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Ensure full width */
+  margin: 20px 0; /* Margin for spacing */
 
   th, td {
     text-align: center;
     vertical-align: middle;
+    padding: 15px; /* Increased padding for better spacing */
+    cursor: pointer; /* Indicate clickable */
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #f0f0f0; /* Light gray on hover */
+    }
   }
 
-  @media (max-width: 768px) {
-    thead {
-      display: none;
-    }
+  th {
+    background-color: #495057; /* Header background color */
+    color: #fff; /* Header text color */
+  }
 
-    tbody {
-      display: block;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
+  tbody tr {
+    transition: background-color 0.2s ease;
 
-    tr {
-      display: block;
-      margin-bottom: 10px;
-      border-bottom: 1px solid #dee2e6;
-    }
-
-    td {
-      display: block;
-      text-align: right;
-      position: relative;
-      padding-left: 50%;
-      padding-right: 10px;
-      white-space: nowrap;
-    }
-
-    td::before {
-      content: attr(data-label);
-      position: absolute;
-      left: 0;
-      width: 50%;
-      padding-left: 10px;
-      font-weight: bold;
-      text-align: left;
+    &:hover {
+      background-color: #f9f9f9; /* Light background on row hover */
     }
   }
 `;

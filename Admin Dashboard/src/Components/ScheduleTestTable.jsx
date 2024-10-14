@@ -12,44 +12,53 @@ const ScheduleTestTable = () => {
     error: state.error,
   }));
 
-  const [viewData, setViewData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sortedData, setSortedData] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "ascending" });
 
   useEffect(() => {
     const loadData = async () => {
-      try {
-        await fetchScheduleTests();
-      } catch (err) {
-        console.error("Failed to fetch scheduled tests:", err);
-      } finally {
+      if (schedules.length === 0) {
+        try {
+          await fetchScheduleTests();
+        } catch (err) {
+          console.error("Failed to fetch scheduled tests:", err);
+        } finally {
+          setLoading(false);
+        }
+      } else {
         setLoading(false);
       }
     };
 
     loadData();
-  }, [fetchScheduleTests]);
+  }, []);
+
+  useEffect(() => {
+    setSortedData(schedules);
+  }, [schedules]);
 
   const navigate = useNavigate();
 
   const handleView = (testId, testDate, testTime, centerIds) => {
-    // Set the view data
-    setViewData({
-      testId,
-      testDate,
-      testTime,
-      centerIds
-    });
-    
-    
-    getDetailedTestInfo({
-      testId,
-      testDate,
-      testTime,  
-      centerIds
+    getDetailedTestInfo({ testId, testDate, testTime, centerIds });
+    navigate(`/scheduletestdetail/${testId}/${testDate}/${testTime}`);
+  };
+
+  const handleSort = (key) => {
+    let direction = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
+    }
+
+    const sortedArray = [...schedules].sort((a, b) => {
+      if (a[key] < b[key]) return direction === "ascending" ? -1 : 1;
+      if (a[key] > b[key]) return direction === "ascending" ? 1 : -1;
+      return 0;
     });
 
-    // Navigate to the detail page
-    navigate(`/scheduletestdetail/${testId}/${testDate}/${testTime}`);
+    setSortConfig({ key, direction });
+    setSortedData(sortedArray);
   };
 
   return (
@@ -68,18 +77,20 @@ const ScheduleTestTable = () => {
                 Loading...
               </LoadingSpinner>
             ) : error ? (
-              <ErrorMessage>Failed to load scheduled tests. Please try again later.</ErrorMessage>
+              <ErrorMessage>
+                Failed to load scheduled tests. Please try again later.
+              </ErrorMessage>
             ) : (
               <StyledTable striped bordered hover>
                 <thead>
                   <tr>
-                    <th>No</th>
-                    <th>Test Name</th>
-                    <th>Test Date</th>
-                    <th>Test Time</th>
-                    <th>Total Centers</th>
-                    <th>Total Capacity</th>
-                    <th>Registered Students</th>
+                    <th onClick={() => handleSort("index")}>No</th>
+                    <th onClick={() => handleSort("testName")}>Test Name</th>
+                    <th onClick={() => handleSort("testDate")}>Test Date</th>
+                    <th onClick={() => handleSort("testTime")}>Test Time</th>
+                    <th onClick={() => handleSort("totalCenters")}>Total Centers</th>
+                    <th onClick={() => handleSort("totalCapacity")}>Total Capacity</th>
+                    <th onClick={() => handleSort("registeredStudents")}>Registered Students</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -91,10 +102,10 @@ const ScheduleTestTable = () => {
                       </td>
                     </tr>
                   ) : (
-                    schedules.map((schedule, index) => {
+                    sortedData.map((schedule, index) => {
                       const testDate = new Date(schedule.testDate);
-                      const testDateString = testDate.toLocaleDateString(); 
-                  
+                      const testDateString = testDate.toLocaleDateString();
+
                       return (
                         <tr key={index}>
                           <td data-label="No">{index + 1}</td>
@@ -108,7 +119,14 @@ const ScheduleTestTable = () => {
                             <StyledButton
                               className="my-2"
                               variant="info"
-                              onClick={() => handleView(schedule.testId, schedule.testDate, schedule.testTime,schedule.centerIds)}
+                              onClick={() =>
+                                handleView(
+                                  schedule.testId,
+                                  schedule.testDate,
+                                  schedule.testTime,
+                                  schedule.centerIds
+                                )
+                              }
                             >
                               View
                             </StyledButton>
@@ -127,20 +145,40 @@ const ScheduleTestTable = () => {
   );
 };
 
+// Styling remains unchanged
 const TableContainer = styled.div`
-  overflow-x: auto; /* Add horizontal scrolling for responsiveness */
-  max-height: 500px; /* Set a fixed height */
+  overflow-x: auto;
+  max-height: 500px;
+  background-color: #f8f9fa; /* Light background for the table container */
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 `;
 
 const StyledTable = styled(Table)`
   background-color: #fff;
-  border: 1px solid #dee2e6;
   border-radius: 0.25rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
-  th, td {
+  th,
+  td {
     text-align: center;
     vertical-align: middle;
+    cursor: pointer; /* Indicate that the header is clickable */
+    padding: 12px; /* Add padding for better spacing */
+  }
+
+  th {
+    background-color: black; /* Bootstrap primary color */
+    color: white;
+    position: relative;
+  }
+
+  th:hover {
+    background-color: #343a40; /* Darker blue on hover */
+  }
+
+  tbody tr:hover {
+    background-color: #f1f1f1; /* Light gray on row hover */
   }
 
   @media (max-width: 768px) {

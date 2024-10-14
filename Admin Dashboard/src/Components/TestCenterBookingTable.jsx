@@ -1,24 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { Table, Container, Row, Col } from "react-bootstrap";
 import styled from "styled-components";
 import { BookingStore } from "../Store/TestCenterStore";
 
 const TestCenterBookingTable = () => {
   const bookings = BookingStore((state) => state.data);
-  const length = bookings ? bookings.length : 0; // Default to 0 if bookings is undefined
+  const length = bookings ? bookings.length : 0;
 
-  // Sort bookings by test_date and test_time
-  const sortedBookings = bookings.sort((a, b) => {
-    const dateA = new Date(a.test_date);
-    const dateB = new Date(b.test_date);
-    
-    // First, sort by test_date
-    if (dateA < dateB) return -1;
-    if (dateA > dateB) return 1;
+  const [sortConfig, setSortConfig] = useState({ key: "test_date", direction: "asc" });
 
-    // If dates are equal, sort by test_time
-    return a.test_time.localeCompare(b.test_time);
+  const sortedBookings = bookings.slice().sort((a, b) => {
+    if (!sortConfig.key) return 0;
+
+    const valueA = a[sortConfig.key];
+    const valueB = b[sortConfig.key];
+
+    if (sortConfig.key === "test_date") {
+      return (new Date(valueA) - new Date(valueB)) * (sortConfig.direction === "asc" ? 1 : -1);
+    } else if (sortConfig.key === "test_time") {
+      return valueA.localeCompare(valueB) * (sortConfig.direction === "asc" ? 1 : -1);
+    } else {
+      return valueA.localeCompare(valueB) * (sortConfig.direction === "asc" ? 1 : -1);
+    }
   });
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
 
   return (
     <Container fluid>
@@ -33,11 +45,11 @@ const TestCenterBookingTable = () => {
             <StyledTable striped bordered hover>
               <thead>
                 <tr>
-                  <th>No</th>
-                  <th>Test Name</th>
-                  <th>Test Center</th>
-                  <th>Test Date</th>
-                  <th>Test Time</th>
+                  <SortableTh onClick={() => handleSort("index")}>No</SortableTh>
+                  <SortableTh onClick={() => handleSort("test_name")}>Test Name</SortableTh>
+                  <SortableTh onClick={() => handleSort("institute_name")}>Test Center</SortableTh>
+                  <SortableTh onClick={() => handleSort("test_date")}>Test Date</SortableTh>
+                  <SortableTh onClick={() => handleSort("test_time")}>Test Time</SortableTh>
                 </tr>
               </thead>
               <tbody>
@@ -49,7 +61,7 @@ const TestCenterBookingTable = () => {
                   </tr>
                 ) : (
                   sortedBookings.map((booking, index) => (
-                    <tr key={booking.id}>
+                    <StyledRow key={booking.id}>
                       <td data-label="No">{index + 1}</td>
                       <td data-label="Test Name">{booking.test_name}</td>
                       <td data-label="Test Center">{booking.institute_name}</td>
@@ -57,7 +69,7 @@ const TestCenterBookingTable = () => {
                         {new Date(booking.test_date).toISOString().split("T")[0]}
                       </td>
                       <td data-label="Test Time">{booking.test_time}</td>
-                    </tr>
+                    </StyledRow>
                   ))
                 )}
               </tbody>
@@ -71,6 +83,10 @@ const TestCenterBookingTable = () => {
 
 const TableContainer = styled.div`
   overflow-x: auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 `;
 
 const StyledTable = styled(Table)`
@@ -83,8 +99,21 @@ const StyledTable = styled(Table)`
   td {
     text-align: center;
     vertical-align: middle;
+    padding: 10px;
   }
 
+  th {
+    background-color: #343a40;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+ th:hover{
+ background-color: black;
+ }
   @media (max-width: 768px) {
     thead {
       display: none;
@@ -119,6 +148,7 @@ const StyledTable = styled(Table)`
       padding-left: 10px;
       font-weight: bold;
       text-align: left;
+      color: #6c757d;
     }
   }
 `;
@@ -127,10 +157,33 @@ const Heading = styled.h2`
   text-align: center;
   color: #343a40;
   margin-bottom: 20px;
+  font-weight: bold;
 `;
 
 const NoDataMessage = styled.div`
   color: #6c757d;
+`;
+
+const SortableTh = styled.th`
+  &:hover {
+    background-color: #495057;
+    color: #ffffff;
+  }
+  &.asc::after {
+    content: " ▲";
+    font-size: 0.8em;
+  }
+  &.desc::after {
+    content: " ▼";
+    font-size: 0.8em;
+  }
+`;
+
+const StyledRow = styled.tr`
+  &:hover {
+    background-color: #f1f1f1;
+    transition: background-color 0.3s ease;
+  }
 `;
 
 export default TestCenterBookingTable;

@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
-import { Button, Form, Col, Row } from 'react-bootstrap';
-import styled from 'styled-components';
-import { z } from 'zod';
-import useTest from '../Hooks/useTest'; 
+import React, { useState } from "react";
+import { Button, Form, Col, Row } from "react-bootstrap";
+import styled from "styled-components";
+import { z } from "zod";
+import useTest from "../Hooks/useTest";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   subject: z.string().min(1, { message: "Subject is required" }),
-  eligibility_criteria: z.string().min(1, { message: "Eligibility criteria is required" }),
-  difficulty_level: z.enum(['easy', 'medium', 'hard'], { message: "Difficulty level must be one of 'easy', 'medium', or 'hard'" }),
-  number_of_questions: z.number().min(1, { message: "Number of questions must be at least 1" })
+  eligibility_criteria: z
+    .string()
+    .min(1, { message: "Eligibility criteria is required" }),
+  difficulty_level: z.enum(["easy", "medium", "hard"], {
+    message: "Difficulty level must be one of 'easy', 'medium', or 'hard'",
+  }),
+  number_of_questions: z
+    .number()
+    .min(1, { message: "Number of questions must be at least 1" }),
 });
 
 const StyledFormContainer = styled.div`
@@ -41,7 +47,9 @@ const StyledFormControl = styled(Form.Control)`
     border-color: #80bdff;
     box-shadow: none;
   }
-  ${({ as }) => as === 'textarea' && `
+  ${({ as }) =>
+    as === "textarea" &&
+    `
     width: 100%;
   `}
 `;
@@ -55,13 +63,13 @@ const StyledButton = styled(Button)`
 `;
 
 const TestForm = (props) => {
-  const { addTest, fetchTests } = useTest();  
+  const { addTest, fetchTests } = useTest();
   const [testData, setTestData] = useState({
-    name: '',
-    subject: '',
-    eligibility_criteria: '',
-    difficulty_level: '',
-    number_of_questions: ''
+    name: "",
+    subject: "",
+    eligibility_criteria: "",
+    difficulty_level: "",
+    number_of_questions: "",
   });
   const [errors, setErrors] = useState({});
 
@@ -78,23 +86,23 @@ const TestForm = (props) => {
     try {
       schema.parse({
         ...testData,
-        number_of_questions: Number(testData.number_of_questions), 
+        number_of_questions: Number(testData.number_of_questions),
       });
-  
+
       await addTest({
         ...testData,
-        number_of_questions: Number(testData.number_of_questions), 
+        number_of_questions: Number(testData.number_of_questions),
       });
-  
+
       setTestData({
-        name: '',
-        subject: '',
-        eligibility_criteria: '',
-        difficulty_level: '',
-        number_of_questions: ''
+        name: "",
+        subject: "",
+        eligibility_criteria: "",
+        difficulty_level: "",
+        number_of_questions: "",
       });
       setErrors({});
-      props.setShowForm(false); 
+      props.setShowForm(false);
     } catch (err) {
       if (err instanceof z.ZodError) {
         const formattedErrors = {};
@@ -110,11 +118,11 @@ const TestForm = (props) => {
 
   const handleClear = () => {
     setTestData({
-      name: '',
-      subject: '',
-      eligibility_criteria: '',
-      difficulty_level: '',
-      number_of_questions: ''
+      name: "",
+      subject: "",
+      eligibility_criteria: "",
+      difficulty_level: "",
+      number_of_questions: "",
     });
     setErrors({});
   };
@@ -134,7 +142,9 @@ const TestForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.name}
               />
-              <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.name}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
           <Col md={6} xs={12}>
@@ -147,7 +157,9 @@ const TestForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.subject}
               />
-              <Form.Control.Feedback type="invalid">{errors.subject}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.subject}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
         </Row>
@@ -162,7 +174,9 @@ const TestForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.difficulty_level}
               />
-              <Form.Control.Feedback type="invalid">{errors.difficulty_level}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.difficulty_level}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
           <Col md={6} xs={12}>
@@ -175,7 +189,9 @@ const TestForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.number_of_questions}
               />
-              <Form.Control.Feedback type="invalid">{errors.number_of_questions}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.number_of_questions}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
         </Row>
@@ -191,13 +207,19 @@ const TestForm = (props) => {
                 onChange={handleInputChange}
                 isInvalid={!!errors.eligibility_criteria}
               />
-              <Form.Control.Feedback type="invalid">{errors.eligibility_criteria}</Form.Control.Feedback>
+              <Form.Control.Feedback type="invalid">
+                {errors.eligibility_criteria}
+              </Form.Control.Feedback>
             </StyledFormGroup>
           </Col>
         </Row>
         <div className="text-center">
-          <StyledButton type="submit" variant="primary">Save</StyledButton>
-          <StyledButton type="button" variant="secondary" onClick={handleClear}>Clear</StyledButton>
+          <StyledButton type="submit" variant="primary">
+            Save
+          </StyledButton>
+          <StyledButton type="button" variant="secondary" onClick={handleClear}>
+            Clear
+          </StyledButton>
         </div>
       </Form>
     </StyledFormContainer>

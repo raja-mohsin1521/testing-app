@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
 import scheduleTestStore from "../Store/ScheduleTestStore";
 
-const API_URL = 'http://localhost:5000/admin/schedule-test';
+const API_URL = `${import.meta.env.VITE_SERVER}/admin/schedule-test`;
 
 const useScheduleTest = () => {
   const [data, setData] = useState({
@@ -11,8 +11,9 @@ const useScheduleTest = () => {
     allCenters: [],
     scheduleTests: [],
     specificCenters: [],
-    detailedTestInfo: [], 
+    detailedTestInfo: [],
   });
+
   const [loading, setLoading] = useState({
     allCities: false,
     allTests: false,
@@ -20,100 +21,109 @@ const useScheduleTest = () => {
     scheduleTests: false,
     specificCenters: false,
     addScheduledTest: false,
-    detailedTestInfo: false, 
+    detailedTestInfo: false,
   });
+
   const [error, setError] = useState(null);
 
-  const fetchAllCities = useCallback(async () => {
-    setLoading(prev => ({ ...prev, allCities: true }));
+  const fetchAllCities = async () => {
+    setLoading((prev) => ({ ...prev, allCities: true }));
     try {
       const response = await axios.get(`${API_URL}/allcities`);
-      setData(prev => ({ ...prev, allCities: response.data.data }));
+      setData((prev) => ({ ...prev, allCities: response.data.data }));
     } catch (err) {
       setError(err);
     } finally {
-      setLoading(prev => ({ ...prev, allCities: false }));
+      setLoading((prev) => ({ ...prev, allCities: false }));
     }
-  }, []);
+  };
 
-  const fetchAllTests = useCallback(async () => {
-    setLoading(prev => ({ ...prev, allTests: true }));
+  const fetchAllTests = async () => {
+    setLoading((prev) => ({ ...prev, allTests: true }));
     try {
       const response = await axios.get(`${API_URL}/alltest`);
-      setData(prev => ({ ...prev, allTests: response.data.data }));
+      setData((prev) => ({ ...prev, allTests: response.data.data }));
     } catch (err) {
       setError(err);
     } finally {
-      setLoading(prev => ({ ...prev, allTests: false }));
+      setLoading((prev) => ({ ...prev, allTests: false }));
     }
-  }, []);
+  };
 
-  const fetchAllCenters = useCallback(async (date,time) => {
-    setLoading(prev => ({ ...prev, allCenters: true }));
+  const fetchAllCenters = async (date, time) => {
+    setLoading((prev) => ({ ...prev, allCenters: true }));
     try {
-      const response = await axios.post(`${API_URL}/allcenters`, { date,time });
-      setData(prev => ({ ...prev, allCenters: response.data.data }));
+      const response = await axios.post(`${API_URL}/allcenters`, {
+        date,
+        time,
+      });
+      setData((prev) => ({ ...prev, allCenters: response.data.data }));
     } catch (err) {
       setError(err);
     } finally {
-      setLoading(prev => ({ ...prev, allCenters: false }));
+      setLoading((prev) => ({ ...prev, allCenters: false }));
     }
-  }, []);
+  };
 
-  const fetchScheduleTests = useCallback(async () => {
-    setLoading(prev => ({ ...prev, scheduleTests: true }));
+  const fetchScheduleTests = async () => {
+    setLoading((prev) => ({ ...prev, scheduleTests: true }));
     try {
       const response = await axios.get(`${API_URL}/allScheduleTests`);
-      setData(prev => ({ ...prev, scheduleTests: response.data.data }));
+      setData((prev) => ({ ...prev, scheduleTests: response.data.data }));
       scheduleTestStore.getState().setData(response.data.data);
     } catch (err) {
       setError(err);
     } finally {
-      setLoading(prev => ({ ...prev, scheduleTests: false }));
+      setLoading((prev) => ({ ...prev, scheduleTests: false }));
     }
-  }, []);
+  };
 
-  const fetchSpecificCenters = useCallback(async ({ city, date,time }) => {
-    setLoading(prev => ({ ...prev, specificCenters: true }));
+  const fetchSpecificCenters = async ({ city, date, time }) => {
+    setLoading((prev) => ({ ...prev, specificCenters: true }));
     try {
-      const response = await axios.post(`${API_URL}/specific-centers`, { city, date,time });
-      setData(prev => ({ ...prev, specificCenters: response.data.data }));
+      const response = await axios.post(`${API_URL}/specific-centers`, {
+        city,
+        date,
+        time,
+      });
+      setData((prev) => ({ ...prev, specificCenters: response.data.data }));
     } catch (err) {
       setError(err);
     } finally {
-      setLoading(prev => ({ ...prev, specificCenters: false }));
+      setLoading((prev) => ({ ...prev, specificCenters: false }));
     }
-  }, []);
+  };
 
-  const addScheduledTest = useCallback(async (scheduledTest) => {
-    setLoading(prev => ({ ...prev, addScheduledTest: true }));
+  const addScheduledTest = async (scheduledTest) => {
+    setLoading((prev) => ({ ...prev, addScheduledTest: true }));
     try {
       const response = await axios.post(`${API_URL}/schedule-test`, scheduledTest);
-      fetchScheduleTests()
+      fetchScheduleTests();
       return response.data;
-      
     } catch (err) {
       setError(err);
       return null;
     } finally {
-      setLoading(prev => ({ ...prev, addScheduledTest: false }));
+      setLoading((prev) => ({ ...prev, addScheduledTest: false }));
     }
-  }, []);
+  };
 
-  
-  const getDetailedTestInfo = useCallback(async ({   testId,testDate,testTime,centerIds  }) => {
-    setLoading(prev => ({ ...prev, detailedTestInfo: true }));
+  const getDetailedTestInfo = async ({ testId, testDate, testTime, centerIds }) => {
+    setLoading((prev) => ({ ...prev, detailedTestInfo: true }));
     try {
-      const response = await axios.post(`${API_URL}/alldetailedTestInfo`, {   testId,testDate,testTime,centerIds });
-      console.log('response', response)
-      setData(prev => ({ ...prev, detailedTestInfo: response.data.data }));
+      const response = await axios.post(`${API_URL}/alldetailedTestInfo`, {
+        testId,
+        testDate,
+        testTime,
+        centerIds,
+      });
+      setData((prev) => ({ ...prev, detailedTestInfo: response.data.data }));
     } catch (err) {
       setError(err);
     } finally {
-      setLoading(prev => ({ ...prev, detailedTestInfo: false }));
+      setLoading((prev) => ({ ...prev, detailedTestInfo: false }));
     }
-  }, []);
-  
+  };
 
   return {
     ...data,
@@ -125,7 +135,7 @@ const useScheduleTest = () => {
     fetchScheduleTests,
     fetchSpecificCenters,
     addScheduledTest,
-    getDetailedTestInfo, 
+    getDetailedTestInfo,
   };
 };
 

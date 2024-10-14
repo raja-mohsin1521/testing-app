@@ -100,13 +100,13 @@ function Dashboard() {
         </Row>
         <Row>
           <Col className="my-3" md={4} xs={12}>
-            <ScoreCards heading="Total Tests" number={dashboard.totalTests} />
+            <ScoreCards heading="Registered Tests " number={dashboard.totalTests} link="/add-test" />
           </Col>
           <Col className="my-3" md={4} xs={12}>
-            <ScoreCards heading="Upcoming Tests" number={dashboard.upcomingTests} />
+            <ScoreCards heading="Upcoming Tests" number={dashboard.upcomingTests} link='/scheduled-tests' />
           </Col>
           <Col className="my-3" md={4} xs={12}>
-            <ScoreCards heading="Today's Tests" number={dashboard.todayTests} />
+            <ScoreCards heading="Today's Tests" number={dashboard.bookedThisWeek} link='test-centers'/>
           </Col>
         </Row>
 
