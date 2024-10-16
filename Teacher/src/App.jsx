@@ -6,18 +6,27 @@ import QuestionsPage from "./components/QuestionsPage";
 import LoginPage from "./components/LoginPage";
 
 const App = () => {
-  const [darkMode, setDarkMode] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); 
-    setIsLoggedIn(!!token);
+    const checkLoginStatus = async () => {
+      const token = await localStorage.getItem("token");
+      if (!token) {
+        setIsLoggedIn(false);
+      } else {
+        setIsLoggedIn(true);
+      }
+    };
+
+    checkLoginStatus();
   }, []);
 
   return (
-    <div className={darkMode ? "dark-mode" : ""}>
-
-      {isLoggedIn && <NavbarComponent toggleDarkMode={() => setDarkMode(!darkMode)} isDarkMode={darkMode} />}
+    <div>
+      {isLoggedIn ? (
+        <NavbarComponent setIsLoggedIn={setIsLoggedIn} />
+      ) : null}
+      
       <Routes>
         {isLoggedIn ? (
           <>
@@ -25,9 +34,11 @@ const App = () => {
             <Route path="/questions" element={<QuestionsPage />} />
           </>
         ) : (
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <>
+            <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
         )}
-        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </div>
   );

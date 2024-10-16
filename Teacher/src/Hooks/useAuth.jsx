@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "http://localhost:5000/teacher/auth";
 
 const useAuth = () => {
   const [loading, setLoading] = useState(false);
@@ -11,7 +11,7 @@ const useAuth = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${API_URL}/teacher/auth/login`, credentials);
+      const response = await axios.post(`${API_URL}/login`, credentials);
       const { token } = response.data;
 
       // Store token in local storage
@@ -29,7 +29,7 @@ const useAuth = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.put(`${API_URL}/teacher/auth/update`, data, {
+      const response = await axios.post(`${API_URL}/update`, data, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { z } from "zod";
 import { Button, Form } from "react-bootstrap";
+import useQuestion from "../Hooks/useQustions";
 
-// Zod validation schema
 const questionSchema = z.object({
   questionText: z.string().min(5, "Question text must be at least 5 characters long"),
   correctAnswer: z.string().min(1, "Correct answer is required"),
   options: z.array(z.string().min(1, "Option cannot be empty")).length(4, "Must have exactly 4 options"),
-  difficultyLevel: z.enum(["Easy", "Medium", "Hard"]),
+  difficultyLevel: z.enum(["easy", "medium", "hard"]),
 });
 
 // Styled components for form styling
@@ -85,6 +85,8 @@ const NavButton = styled(Button)`
 `;
 
 const QuestionForm = () => {
+const {addQuestion} = useQuestion();
+
   const [questions, setQuestions] = useState([
     {
       questionText: '',
@@ -119,26 +121,30 @@ const QuestionForm = () => {
     setCurrentQuestionIndex(questions.length);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Validate the current question
       questionSchema.parse(questions[currentQuestionIndex]);
       
-      // Log all questions data
-      console.log("Submitted Questions Data:", questions);
+      const token = localStorage.getItem('token');
+      const formattedData = {
+        token,
+        questions
+      };
+  
+      await addQuestion(formattedData);
+      console.log("Submitted Questions Data:", formattedData);
       
       setErrors({});
       
-      // Clear all data
-      setQuestions([
-        {
-          questionText: '',
-          correctAnswer: '',
-          options: ['', '', '', ''],
-          difficultyLevel: 'Easy',
-        },
-      ]);
+      // setQuestions([
+      //   {
+      //     questionText: '',
+      //     correctAnswer: '',
+      //     options: ['', '', '', ''],
+      //     difficultyLevel: 'Easy',
+      //   },
+      // ]);
       setCurrentQuestionIndex(0);
     } catch (err) {
       if (err.errors) {
@@ -150,6 +156,7 @@ const QuestionForm = () => {
       }
     }
   };
+  
 
   return (
     <StyledFormContainer>

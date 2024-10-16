@@ -68,13 +68,13 @@ const StyledNavbar = styled(Navbar)`
   }
 `;
 
-const NavbarComponent = ({ toggleDarkMode, isDarkMode }) => {
+const NavbarComponent = ({ toggleDarkMode, isDarkMode,setIsLoggedIn }) => {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const handleLogout = () => {
-    // Remove the token from local storage
+  
     localStorage.removeItem("token");
-    // Redirect to the login page
+    setIsLoggedIn(false);
     navigate("/login");
   };
 

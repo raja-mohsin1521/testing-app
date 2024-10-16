@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Form,
@@ -10,6 +10,10 @@ import styled from "styled-components";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import useStore from '../store';
+import useQuestion from "../Hooks/useQustions";
+
+
 
 // Validation schema using Zod
 const validationSchema = z.object({
@@ -87,25 +91,20 @@ const StyledFormControl = styled(Form.Control)`
 `;
 
 const QuestionsTable = () => {
-  const initialQuestions = [
-    {
-      id: 1,
-      text: "What is 2 + 2?",
-      options: ["3", "4", "5", "6"],
-      answer: "4",
-      difficulty: "Easy",
-    },
-    {
-      id: 2,
-      text: "What is the capital of France?",
-      options: ["Berlin", "Madrid", "Paris", "Rome"],
-      answer: "Paris",
-      difficulty: "Medium",
-    },
-    // Add more initial questions as needed
-  ];
 
-  const [questions, setQuestions] = useState(initialQuestions);
+  const {fetchQuestions}=useQuestion();
+  useEffect(() => {
+    fetchQuestions(); 
+  }, []);
+  
+  const {data}=useStore();
+
+useEffect(()=>{
+ 
+  setQuestions(data)
+},[])
+
+  const [questions, setQuestions] = useState(data);
   const [showModal, setShowModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);

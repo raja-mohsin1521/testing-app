@@ -52,7 +52,7 @@ const useDashboard = () => {
       const response = await axios.post(
         `${API_URL}/teacher-details`,
         {
-          token: localStorage.getItem("token"), // Send token in the body
+          token: localStorage.getItem("token"), 
         }
       );
       return response.data;

@@ -85,19 +85,19 @@ const StyledButton = styled(Button)`
   }
 `;
 
-const LoginPage = () => {
+const LoginPage = (props) => {
   const { loginTeacher, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if there's a token in localStorage
+  
     const token = localStorage.getItem("token");
     if (token) {
-      setIsAuthenticated(true);
-      navigate("/"); // Redirect if authenticated
+      props.setIsLoggedIn(true)
+      navigate("/"); 
     }
   }, [navigate]);
 
@@ -105,7 +105,7 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       await loginTeacher({ email, password });
-      setIsAuthenticated(true);
+      props.setIsLoggedIn(true)
       navigate('/'); // Redirect after successful login
     } catch (error) {
       console.error('Login error:', error);

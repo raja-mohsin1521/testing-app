@@ -4,7 +4,7 @@ import styled from "styled-components";
 import QuestionForm from "./QuestionForm";
 import QuestionsTable from "./QuestionsTable";
 
-// Styled Container for the entire page
+
 const StyledContainer = styled(Container)`
   background: linear-gradient(135deg, #f6f9fc, #e9ecef);
   min-height: 100vh;
@@ -18,7 +18,6 @@ const StyledContainer = styled(Container)`
   }
 `;
 
-// Styled Row for header controls
 const HeaderRow = styled(Row)`
   margin-bottom: 20px;
   text-align: end;
@@ -117,7 +116,7 @@ const QuestionsPage = () => {
      
      
 
-      {/* Questions Table */}
+   
       <QuestionsTable />
     </StyledContainer>
   );
