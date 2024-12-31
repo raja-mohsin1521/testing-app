@@ -1,76 +1,221 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import useStore from '../store'; 
+import useStore from '../store';
 
 const useQuestion = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { data, setData } = useStore(); 
-const url='http://localhost:5000/teacher'
-const fetchQuestions = async () => {
-  setLoading(true);
-  setError(null);
-  const token = localStorage.getItem('token');
-  console.log('token', token);
+  const { data } = useStore();
+
+  const url = 'http://localhost:5000/teacher';
+
+  const fetchCourses = async () => {
+    try {
+      const response = await axios.get(`${url}/courses`);
+      return response.data;  
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+      throw err; 
+    }
+  };
+  const fetchModules = async (courseId) => {
+    try {
+      const response = await axios.get(`${url}/courses/${courseId}/modules`);
+      return response.data.modules;  
+    } catch (err) {
+      console.error(`Error fetching modules for course ${courseId}:`, err);
+      throw err;  
+    }
+  };
   
-  try {
-    const response = await axios.post(`${url}/questions/get`, { token }); 
-    console.log('response', response)
-    setData(response.data.questions);
-  } catch (err) {
-    setError(err.response.data.message || "Error fetching questions");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-  const addQuestion = async (newQuestion) => {
-    setLoading(true);
-    setError(null);
-    console.log('a')
-      try {
-      await axios.post(`${url}/questions/add`, newQuestion);
-
-      fetchQuestions();
-    } catch (err) {
-      setError(err.response.data.message || "Error adding question");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateQuestion = async (updatedQuestion) => {
+  const getObjectiveQuestionsWithoutImages = async ( currentpage) => {
+    const teacher_id=14
     setLoading(true);
     setError(null);
     try {
-      await axios.put(`${url}/questions/update`, updatedQuestion);
-      fetchQuestions();
+      const response = await axios.post(`${url}/questions/objective/without-images`, { teacher_id, currentpage });
+      const { objective, total } = response.data;
+      
+      return { objective, total };
     } catch (err) {
-      setError(err.response.data.message || "Error updating question");
+      setError(err.response?.data || 'Error fetching objective questions without images');
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteQuestion = async (questionId) => {
+  const getSubjectiveQuestionsWithoutImages = async (currentpage=1) => {
+    const teacher_id=14
     setLoading(true);
     setError(null);
     try {
-      await axios.delete(`${url}/questions/delete`, { data: { id: questionId } });
-      fetchQuestions();
+     
+      const response = await axios.post(`${url}/questions/subjective/without-images`, { teacher_id, currentpage });
+     
+      const { subjective, total } = response.data;
+      
+      return { subjective, total };
     } catch (err) {
-      setError(err.response.data.message || "Error deleting question");
+      setError(err.response?.data || 'Error fetching subjective questions without images');
     } finally {
       setLoading(false);
     }
   };
+
+  const getObjectiveQuestionsWithImages = async ( page = 1) => {
+    setLoading(true);
+    setError(null);
+    let teacher_id=14;
+    try {
+      const response = await axios.post(`${url}/questions/objective/with-images`, { teacher_id, page });
+      const {  objective, total } = response.data;
+      
+      return {  objective, total};
+    } catch (err) {
+      setError(err.response?.data || 'Error fetching objective questions with images');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getSubjectiveQuestionsWithImages = async ( page = 1) => {
+    setLoading(true);
+    setError(null);
+    const teacher_id=14
+    try {
+      const response = await axios.post(`${url}/questions/subjective/with-images`, {teacher_id , page });
+      const { subjective, total} = response.data;
+      return { subjective, total };
+    } catch (err) {
+      setError(err.response?.data || 'Error fetching subjective questions with images');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addQuestion = async (formData) => {
+    try {
+      const response = await axios.post(`${url}/questions/add/objective`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading question:', error);
+      throw error;
+    }
+  };
+
+  const addSubjectiveQuestion = async (formData) => {
+    try {
+      const response = await axios.post(`${url}/questions/add/subjective`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading subjective question:', error);
+      throw error;
+    }
+  };
+
+  const updateQuestion = async (teacher_id, updatedData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await axios.put(`${url}/questions/update`, {
+        teacher_id,
+        ...updatedData,
+      });
+      await fetchQuestions(teacher_id);
+    } catch (err) {
+      setError(err.response?.data || 'Error updating question');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteQuestion = async ( id, type) => {
+    if (!type) {
+      setError("Question type ('sub' or 'obj') is required.");
+      return;
+    }
+  const teacher_id=14;
+    setLoading(true);
+    setError(null);
+  
+    try {
+     
+      await axios.delete(`${url}/questions/delete`, {
+        data: { teacher_id, id, type },
+      });
+  
+  
+    } catch (err) {
+ 
+      const errorMessage =
+        err.response?.data || "An error occurred while deleting the question.";
+      setError(errorMessage);
+    } finally {
+      // Ensure loading state is cleared
+      setLoading(false);
+    }
+  };
+  
+  const importObj = async ( data) => {
+    setLoading(true);
+    setError(null);
+    console.log('data', data)
+    try {
+      const response = await axios.post(`${url}/questions/import/objective`, { teacher_id:14, data });
+      
+    } catch (err) {
+      setError(err.response?.data || 'Error importing objective questions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const importSub = async ( data) => {
+    setLoading(true);
+    setError(null);
+    console.log('data', data)
+    try {
+      const response = await axios.post(`${url}/questions/import/subjective`, { teacher_id: 14, data });
+      
+    } catch (err) {
+      setError(err.response?.data || 'Error importing subjective questions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+  
 
   useEffect(() => {
-    fetchQuestions();
+    const teacher_id = localStorage.getItem('teacher_id');
+    if (teacher_id) {
+      fetchQuestions(teacher_id);
+    }
   }, []);
 
-  return { data, loading, error,fetchQuestions, addQuestion, updateQuestion, deleteQuestion };
+  return {
+    data,
+    loading,
+    error,
+    getObjectiveQuestionsWithoutImages,
+    getSubjectiveQuestionsWithoutImages,
+    getObjectiveQuestionsWithImages,
+    getSubjectiveQuestionsWithImages,
+    addQuestion,
+    addSubjectiveQuestion,
+    updateQuestion,
+    deleteQuestion,
+    importObj,
+    importSub,
+    fetchCourses,
+    fetchModules
+  };
 };
 
 export default useQuestion;

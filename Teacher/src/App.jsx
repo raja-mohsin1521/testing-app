@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import NavbarComponent from "./components/Navbar";
-import HomePage from "./components/HomePage";
-import QuestionsPage from "./components/QuestionsPage";
-import LoginPage from "./components/LoginPage";
+import HomePage from "./Pages/HomePage";
+import QuestionsPage from "./Pages/QuestionsPage";
+import LoginPage from "./Pages/LoginPage";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

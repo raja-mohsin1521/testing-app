@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
-import TeacherDetailsCard from "./TeacherDetailsCard";
+import TeacherDetailsCard from "../components/TeacherDetailsCard";
 import styled, { keyframes } from "styled-components";
 import useDashboard from "../Hooks/useDasboard";
 
@@ -74,7 +74,7 @@ const HomePage = () => {
         setAddedQuestionsCount(addedCount.added_questions_count);
         setRequiredQuestionsCount(requiredCount.required_questions);
         setTeacherDetails(teacherDetailsData); // Set teacher details
-        console.log('Teacher Details:', teacherDetailsData);
+        
       } catch (err) {
         console.error("Error fetching counts:", err);
       }

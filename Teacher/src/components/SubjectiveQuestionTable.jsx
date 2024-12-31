@@ -28,10 +28,10 @@ const validationSchema = z.object({
     .regex(/^[a-zA-Z ]*$/, "Difficulty must be a valid text"),
 });
 
-
+// Main container styling
 const Container = styled.div`
   padding: 20px;
-  overflow-x:scroll;
+overflow-x:scroll;
   margin: auto;
   background: linear-gradient(to right, #f8f9fa, #e9ecef);
   border-radius: 15px;
@@ -43,7 +43,7 @@ const StyledTable = styled(Table)`
   margin-top: 20px;
   background-color: #ffffff;
   border-radius: 10px;
-  overflow-x:scroll ;
+  overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
   thead {
@@ -90,22 +90,40 @@ const StyledFormControl = styled(Form.Control)`
   }
 `;
 
-const QuestionsTable = () => {
+const SubjectiveQuestionsTable = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { getObjectiveQuestionsWithoutImages,deleteQuestion } = useQuestion();
+  const { getSubjectiveQuestionsWithoutImages ,deleteQuestion} = useQuestion();
 
- 
+  const [isExpanded, setIsExpanded] = useState({
+    question_text: false,
+    notes: false,
+  });
+
+  const toggleExpand = (field) => {
+    setIsExpanded((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
+
+  const getLimitedText = (text, limit, field) => {
+    if (text.length <= limit || isExpanded[field]) {
+      return text;
+    }
+    return text.slice(0, limit) + "...";
+  };
   useEffect(() => {
     const fetchData = async () => {
-      const { objective, total } = await getObjectiveQuestionsWithoutImages(currentPage);
+      const { subjective, total } = await getSubjectiveQuestionsWithoutImages(currentPage);
+   
       
       
-      setQuestions(objective);
+      setQuestions(subjective);
       setTotalPages(Math.ceil(total / 25));
     };
 
@@ -135,9 +153,10 @@ const QuestionsTable = () => {
     setShowModal(false);
   };
 
-  const handleDelete = (id, type) => {
+  const handleDelete = (id,type) => {
     deleteQuestion(id,type)
     setQuestions(questions.filter((q) => q.id !== id));
+
   };
 
   const handlePageChange = (pageNumber) => {
@@ -223,30 +242,39 @@ const QuestionsTable = () => {
           <tr>
             <th>No</th>
             <th>Question</th>
-            <th>Option 1</th>
-            <th>Option 2</th>
-            <th>Option 3</th>
-            <th>Option 4</th>
-            <th>Correct Answer</th>
+           
+           <th>Notes</th>
             <th>Difficulty Level</th>
-            <th>Course </th>
+            <th>Course</th>
             <th>Module</th>
+            <th>Marks</th>
             <th>Actions</th>
           </tr>
         </thead>
-       { <tbody>
-          {questions.length==0?<tr ><td colspan="9">No Questions Found</td></tr>: questions.map((q,index) => (
+        <tbody>
+          {questions.length==0?<tr ><td colspan="9">No Questions Found</td></tr>:questions.map((q,index) => (
             <tr key={q.obj_question_id}>
               <th>{((currentPage-1)*25)+(index+1)}</th>
-              <td>{q.question_text}</td>
-              <td>{q.option_1}</td>
-              <td>{q.option_2}</td>
-              <td>{q.option_3}</td>
-              <td>{q.option_4}</td>
-              <td>{q.correct_answer}</td>
+              <td>
+        {getLimitedText(q.question_text, 25, "question_text")}
+        {q.question_text.length > 25 && (
+          <button onClick={() => toggleExpand("question_text")}>
+            {isExpanded.question_text ? "Show Less" : "Show More"}
+          </button>
+        )}
+      </td>
+      <td>
+        {getLimitedText(q.notes, 25, "notes")}
+        {q.notes.length > 25 && (
+          <button onClick={() => toggleExpand("notes")}>
+            {isExpanded.notes ? "Show Less" : "Show More"}
+          </button>
+        )}
+      </td>
               <td>{q.difficulty_level}</td>
               <td>{q.course_name}</td>
               <td>{q.module_name}</td>
+              <td>{q.marks}</td>
               <td>
                 <Button
                   variant="warning"
@@ -259,14 +287,14 @@ const QuestionsTable = () => {
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={() => handleDelete(q.obj_question_id, 'obj')}
+                  onClick={() => handleDelete(q.subj_question_id , 'sub')}
                 >
                   Delete
                 </Button>
               </td>
             </tr>
           ))}
-        </tbody>}
+        </tbody>
       </StyledTable>
 
 
@@ -277,7 +305,7 @@ const QuestionsTable = () => {
         <Modal.Body>
           <Form onSubmit={handleSubmit(handleSave)}>
             <Form.Group>
-              <Form.Label>Question</Form.Label>
+              <Form.Label>Subjective Question</Form.Label>
               <StyledFormControl
                 type="text"
                 {...register("question_text")}
@@ -339,4 +367,4 @@ const QuestionsTable = () => {
   );
 };
 
-export default QuestionsTable;
+export default SubjectiveQuestionsTable;
