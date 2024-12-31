@@ -38,7 +38,7 @@ const getAllCities = async (req, res) => {
 const getAllCenters = async (req, res) => {
     try {
       const { date, time } = req.body;
-      console.log('req.body', req.body);
+      
   
       if (!date || !time) {
         return res.status(400).json({
@@ -99,7 +99,7 @@ const getAllCenters = async (req, res) => {
 const getSpecificCenters = async (req, res) => {
   try {
     const { city, date, time } = req.body;
-console.log('req.body', req.body)
+
     if (!city || !date || !time) {
       return res.status(400).json({
         success: false,

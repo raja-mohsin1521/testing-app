@@ -79,7 +79,7 @@ const readAllTeachers = async (req, res) => {
 // Get a specific teacher
 const getTeacher = async (req, res) => {
   const { teacher_id } = req.body;
-console.log('teacher_id', teacher_id)
+
   if (!teacher_id) {
     return res.status(400).json({ error: "TeacherID is required" });
   }
@@ -136,7 +136,7 @@ const updateTeacher = async (req, res) => {
 
   const { teacherId: teacher_id } = req.body;
 
-  console.log('req.body', req.body);
+  
 
   // Check for required fields
   if (!teacher_id || !full_name || !email || !hire_date || !subject_specialization) {

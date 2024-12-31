@@ -4,7 +4,7 @@ const secretKey = process.env.JWT_SECRET || "yourSecretKey";
 
 // Generate a JWT token for the user
 const generateToken = (user) => {
-  console.log('Generating token for user:', user); 
+   
   return jwt.sign(
       user, 
     secretKey,

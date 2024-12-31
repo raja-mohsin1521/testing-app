@@ -26,11 +26,11 @@ const createStudent = async (req, res) => {
       [name, email, password, dateOfBirth, phone, address, enrollmentDate]
     );
     const newStudent = result.rows[0];
-    console.log("New Student Object:", newStudent);  // Log full object to verify field names
+      // Log full object to verify field names
 
     // Ensure studentId is retrieved correctly
     const studentId = newStudent.studentid;
-    console.log("New Student ID:", studentId);
+    
 
     if (!studentId) {
       throw new Error("Student ID is undefined");

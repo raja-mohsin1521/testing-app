@@ -10,11 +10,11 @@ const bcrypt = require('bcryptjs');
 
 const updateAdminPassword = async (req, res) => {
     const { email, newPassword } = req.body;
-  console.log('req.body', req.body)
+  
     if (!email || !newPassword) {
       return res.status(400).json({ error: "Email and new password are required" });
     }
-  console.log('req.body', req.body)
+  
     try {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       const result = await pool.query("UPDATE admin SET password = $1 WHERE email = $2 RETURNING *", [hashedPassword, email]);
@@ -33,8 +33,8 @@ const updateAdminPassword = async (req, res) => {
 
   const verifyAdminLogin = async (req, res) => {
     const { email, password } = req.body;
-    console.log('req.body', req.body)
-  console.log('req.body', req.body)
+    
+  
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }

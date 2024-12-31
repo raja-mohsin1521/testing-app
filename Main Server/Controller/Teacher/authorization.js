@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 
 const loginTeacher = async (req, res) => {
   const { email, password } = req.body;
-  console.log('req.body', req.body);
+  
 
   if (!email.trim() || !password.trim()) {
     return res.status(400).send("Email and password are required and cannot be empty or only white space.");
@@ -22,11 +22,11 @@ const loginTeacher = async (req, res) => {
     }
 
     const teacher = result.rows[0];
-    console.log("Teacher found:", teacher);
+    
 
     // Use bcrypt.compare to compare entered password and stored hashed password
     const isMatch = await bcrypt.compare(password, teacher.password);
-    console.log("Password match:", isMatch);
+    
 
     if (!isMatch) {
       return res.status(401).send("Invalid password");
@@ -34,7 +34,7 @@ const loginTeacher = async (req, res) => {
 
     // Generate token with the teacher's id and other necessary info
     const token = generateToken({ teacher_id: teacher.teacher_id, email: teacher.email });
-    console.log('token', token);
+    
 
     res.json({ teacher, token });
   } catch (err) {
@@ -45,7 +45,7 @@ const loginTeacher = async (req, res) => {
 
 const updateTeacher = async (req, res) => {
   const {  teacher_id, full_name, password, date_of_birth, phone, address, hire_date, subject_specialization } = req.body;
-console.log('req.body', req.body)
+
  
   try {
     
@@ -55,21 +55,21 @@ console.log('req.body', req.body)
 
     
     const teacherResult = await pool.query("SELECT password FROM teacher WHERE teacher_id = $1", [teacher_id]);
-    console.log('',teacherResult )
+    
     let result
     if(teacherResult.rows[0].password===password){
      result = await pool.query(
         "UPDATE teacher SET full_name = $1, date_of_birth = $2, phone = $3, address = $4, hire_date = $5, subject_specialization = $6 WHERE teacher_id = $7 RETURNING *",
         [full_name,  date_of_birth, phone, address, hire_date, subject_specialization, teacher_id]
       );
-console.log('password not updated' )
+
     }
     else{
       result = await pool.query(
         "UPDATE teacher SET full_name = $1, password = COALESCE($2, password), date_of_birth = $3, phone = $4, address = $5, hire_date = $6, subject_specialization = $7 WHERE teacher_id = $8 RETURNING *",
         [full_name, hashedPassword, date_of_birth, phone, address, hire_date, subject_specialization, teacher_id]
       );
-      console.log('password updated' )
+      
     }
 
 

@@ -4,14 +4,14 @@ const jwt = require("jsonwebtoken");
 const { verifyToken } = require("../../jwt"); // Import the token functions
 
 const getAddedQuestionsCount = async (req, res) => {
-  console.log('req.body', req.body);
+  
   const { token } = req.body; // Extract token from the request body
 
   try {
     // Verify the token and extract teacher_id
     const decoded = verifyToken(token);  
     const teacher_id = decoded.teacher_id; 
-    console.log('teacher_id from token:', decoded); // Debug log
+     // Debug log
 
     if (!teacher_id) {
       return res.status(400).send("Teacher ID is required.");

@@ -47,7 +47,7 @@ const getAllTests = async (req, res) => {
 // Update a test
 const updateTest = async (req, res) => {
     const { id, name, subject, eligibility_criteria, difficulty_level, number_of_questions } = req.body; // Update these variable names
-    console.log('req.body', req.body);
+    
   
     // Validate the required fields
     if (!id || !name || !difficulty_level || number_of_questions === undefined) {
