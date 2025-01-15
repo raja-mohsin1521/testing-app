@@ -3,30 +3,33 @@ import styled from "styled-components";
 import { z } from "zod";
 import { Button, Form } from "react-bootstrap";
 import useQuestion from "../Hooks/useQustions";
+import Alert from "./Alert";
+
+
 
 const questionSchema = z.object({
   questionText: z
     .string()
-    .min(5, "Question text must be at least 5 characters long"),
+    .min(5, "Question text must be at least 5 characters long"), // Ensure at least 5 characters for the question text
+
   correctAnswer: z.enum(
     ["A", "B", "C", "D"],
     "Correct answer must be A, B, C, or D"
   ),
+
   options: z.array(
-    z
-      .object({
-        text: z.string().optional(),
-        image: z.string().optional(),
-      })
-      .refine(
-        (option) => option.text || option.image,
-        "Each option must have either text or an image."
-      )
-  ),
-  difficultyLevel: z.enum(["easy", "medium", "hard"]),
-  course: z.string().min(1, "Course is required"),
-  image: z.string().optional(),
+    z.object({
+      text: z.string().min(1, "Option text must be provided"), // Ensure option text is not empty
+    })
+  ).refine(options => options.every(option => option.text), "Each option must have text."),
+
+  difficultyLevel: z.enum(["easy", "medium", "hard"], "Difficulty level must be one of easy, medium, or hard"), // Ensure valid difficulty level
+
+  course: z.string().min(1, "Course is required"), // Ensure course is provided
+
+  module_id: z.string().min(1, "Module is required") // Ensure module_id is provided
 });
+
 
 const StyledFormContainer = styled.div`
   max-width: 800px;
@@ -103,7 +106,9 @@ const NavButton = styled(Button)`
 
 const QuestionForm = () => {
   const { addQuestion, fetchCourses, fetchModules } = useQuestion();
-
+  const [showAlert, setShowAlert] = useState(true);
+const [alertMessage, setAlertMessage] = useState('');
+const [statusCode, setStatusCode] = useState(0);
   const [courses, setCourses] = useState([]);
   const [modules, setModules] = useState([]);
 
@@ -138,7 +143,7 @@ const QuestionForm = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [errors, setErrors] = useState({});
 
- 
+  const getToken = () => localStorage.getItem('token');
   const handleChange = async (e) => {
     const { name, value, files } = e.target;
     const updatedQuestions = [...questions];
@@ -170,14 +175,22 @@ const QuestionForm = () => {
     setQuestions(updatedQuestions);
   };
   
-
+ 
  
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const currentQuestion = questions[currentQuestionIndex];
-    const validationResult = questionSchema.safeParse(currentQuestion);
   
+    const currentQuestion = questions[currentQuestionIndex];
+  
+    // Perform validation using Zod
+    const validationResult = questionSchema.safeParse(currentQuestion);
     
+    // If validation fails, handle the errors and return
+    if (!validationResult.success) {
+      const formattedErrors = validationResult.error.formErrors.fieldErrors;
+      setErrors(formattedErrors); // Set validation errors in the state
+      return;
+    }
   
     try {
       const formData = new FormData();
@@ -186,9 +199,10 @@ const QuestionForm = () => {
       formData.append("questionText", currentQuestion.questionText);
       formData.append("correctAnswer", currentQuestion.correctAnswer);
       formData.append("difficultyLevel", currentQuestion.difficultyLevel);
-      formData.append("course_id", currentQuestion.course); 
-      formData.append("module_id", currentQuestion.module_id); 
+      formData.append("course_id", currentQuestion.course);
+      formData.append("module_id", currentQuestion.module_id);
   
+      // Append image if it exists
       if (currentQuestion.image) {
         formData.append("image", currentQuestion.image);
       }
@@ -201,10 +215,21 @@ const QuestionForm = () => {
         }
       });
   
-      formData.append("token", "14"); 
+      formData.append("token", getToken());
   
-      
-      await addQuestion(formData);
+      // Call your API to add the question
+      const data = await addQuestion(formData);
+      console.log('data', data);
+  
+      setAlertMessage(data.error);
+      setStatusCode(data.status);
+  
+      setShowAlert(true);
+  
+      // Hide the alert after 3 seconds
+      setTimeout(() => {
+        setShowAlert(false);
+      }, 3000);
   
       // Reset form after submission
       setQuestions([{
@@ -351,7 +376,7 @@ const QuestionForm = () => {
             <option value="hard">Hard</option>
           </StyledInput>
         </StyledFormGroup>
-
+        {!showAlert? <Alert alertMessage={alertMessage} statusCode={statusCode} />:<></>}
         <StyledButton type="submit">Submit Question</StyledButton>
       </StyledForm>
     </StyledFormContainer>

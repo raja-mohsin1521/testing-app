@@ -12,20 +12,17 @@ import styled from "styled-components";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useStore from '../store';
 import useQuestion from "../Hooks/useQustions";
+import FilterAndSort from "./FilterAndSort";
 
 // Validation schema using Zod
 const validationSchema = z.object({
-  text: z.string().min(5, "Question must be at least 5 characters long"),
-  options: z
-    .array(z.string().min(1, "Option cannot be empty"))
-    .length(4, "There must be exactly 4 options"),
-  answer: z.string().min(1, "Correct answer is required"),
-  difficulty: z
-    .string()
-    .min(1, "Difficulty level is required")
-    .regex(/^[a-zA-Z ]*$/, "Difficulty must be a valid text"),
+  question_text: z.string().min(5, "Question must be at least 5 characters long"),
+  difficulty_level: z.string().min(1, "Difficulty level is required"),
+  notes: z.string().optional(),
+  marks: z.number().min(1, "Marks must be at least 1"),
+  course_name: z.string().min(1, "Course is required"),
+  module_name: z.string().min(1, "Module is required"),
 });
 
 const Container = styled.div`
@@ -43,36 +40,36 @@ const StyledCard = styled(Card)`
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 
   &:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   }
 
-  .card-img-top ,img{
+  .card-img-top {
     object-fit: cover;
-   
-      aspect-ratio: 4 / 1;
-    
+    aspect-ratio: 4 / 1;
+    border-radius: 10px 10px 0 0;
   }
 
   .card-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    padding: 20px;
   }
 
   .card-title {
     font-weight: bold;
     font-size: 18px;
+    margin-bottom: 15px;
   }
 
   .card-text {
     font-size: 14px;
-    margin: 10px 0;
+    margin-bottom: 10px;
   }
 
   .card-footer {
     text-align: right;
     padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 0 0 10px 10px;
   }
 `;
 
@@ -92,26 +89,63 @@ const StyledFormControl = styled(Form.Control)`
   }
 `;
 
-const SubQuestionCard = () => {
+const QuestionImage = styled.img`
+  max-width: 100%;
+  max-height: 200px;
+  margin-top: 10px;
+  border-radius: 5px;
+  object-fit: cover;
+  cursor: pointer;
+`;
+
+const SubjQuestionCard = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [courses, setCourses] = useState([]);
+  const [modules, setModules] = useState([]);
+  const [filters, setFilters] = useState({ course: "", difficulty: "" });
+  const [sortBy, setSortBy] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [enlargedImage, setEnlargedImage] = useState(null);
 
-  const { getSubjectiveQuestionsWithImages, deleteQuestion } = useQuestion();
+  const { getSubjectiveQuestionsWithImages, deleteQuestion, fetchModules, fetchCourses } = useQuestion();
+
+  const fetchData = async () => {
+    try {
+      const { subjective, total } = await getSubjectiveQuestionsWithImages(
+        currentPage,
+        filters.course,
+        filters.difficulty,
+        sortBy,
+        sortOrder
+      );
+
+      if (!subjective || subjective.length === 0) {
+        setQuestions([]);
+        setTotalPages(0);
+      } else {
+        setQuestions(subjective);
+        setTotalPages(Math.ceil(total / 4));
+      }
+    } catch (err) {
+      console.error("Error fetching questions:", err);
+      setQuestions([]);
+      setTotalPages(0);
+    }
+  };
+
+  const getCourses = async () => {
+    const courseList = await fetchCourses();
+    setCourses(courseList);
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const { subjective, total } = await getSubjectiveQuestionsWithImages(currentPage);
-      
-     
-      setQuestions(subjective);
-      setTotalPages(Math.ceil(total / 4));
-    };
-
     fetchData();
-  }, [currentPage]);
+    getCourses();
+  }, [currentPage, filters, sortBy, sortOrder]);
 
   const {
     register,
@@ -124,26 +158,82 @@ const SubQuestionCard = () => {
 
   const handleEdit = (question) => {
     setSelectedQuestion({ ...question });
-    reset(question);
+    reset({
+      ...question,
+      course_id: question.course_id,
+      module_id: question.module_id,
+    });
+
+    if (question.course_id) {
+      fetchModules(question.course_id).then((relatedModules) => {
+        setModules(relatedModules);
+      });
+    }
+
     setShowModal(true);
   };
 
-  const handleSave = (data) => {
-    const updatedQuestions = questions.map((q) =>
-      q.obj_question_id === selectedQuestion.obj_question_id ? { ...selectedQuestion, ...data } : q
-    );
-    setQuestions(updatedQuestions);
-    setShowModal(false);
+  const handleSave = async (data) => {
+    const token = localStorage.getItem("token");
+
+    const selectedCourse = courses.find((course) => course.course_name === data.course_name);
+    const course_id = selectedCourse ? selectedCourse.id : undefined;
+
+    const selectedModule = modules.find((module) => module.module_name === data.module_name);
+    const module_id = selectedModule ? selectedModule.id : undefined;
+
+    const payload = {
+      question_id: selectedQuestion.subj_question_id,
+      course_id: course_id,
+      module_id: module_id,
+      question_text: data.question_text,
+      difficulty_level: data.difficulty_level,
+      notes: data.notes,
+      marks: data.marks,
+      token: token,
+    };
+
+    try {
+      const updatedQuestion = await editSubjQuestion(payload);
+      const updatedQuestions = questions.map((q) =>
+        q.subj_question_id === selectedQuestion.subj_question_id ? updatedQuestion : q
+      );
+      setQuestions(updatedQuestions);
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error updating question:", error);
+    }
   };
 
   const handleDelete = (id, type) => {
-    console.log('id', id)
     deleteQuestion(id, type);
-    setQuestions(questions.filter((q) => q.obj_question_id !== id));
+    setQuestions(questions.filter((q) => q.subj_question_id !== id));
   };
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters({ ...filters, [name]: value });
+  };
+
+  const handleSortChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "sortBy") {
+      setSortBy(value);
+    } else if (name === "sortOrder") {
+      setSortOrder(value);
+    }
+  };
+
+  const handleImageClick = (imageUrl) => {
+    setEnlargedImage(imageUrl);
+  };
+
+  const handleCloseEnlargedImage = () => {
+    setEnlargedImage(null);
   };
 
   const generatePaginationItems = () => {
@@ -220,149 +310,186 @@ const SubQuestionCard = () => {
 
   return (
     <Container fluid className="mb-5">
-   
+      <FilterAndSort
+        courses={courses}
+        filters={filters}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onFilterChange={handleFilterChange}
+        onSortChange={handleSortChange}
+      />
+
       <Row>
-        {questions?.length === 0 ? (
-          <Col>No Questions Found</Col>
+        {questions.length === 0 ? (
+          <Col className="text-center">No Questions Found</Col>
         ) : (
-          
-            questions?.map((q, index) => (
-                <Col key={q.subj_question_id} xs={12} sm={6}>
-                  <StyledCard>
-                    {q.image_url && <Card.Img variant="top" src={`http://localhost:5000/${q.image_url}`} />}
-                    <Card.Body>
-                      <Card.Title className="text-center">{q.question_text}</Card.Title>
-                      <Card.Text className="text-center">
-                            {`Notes: ${q.notes}`}
-                          </Card.Text>
-                      <Row>
-                        <Col xs={12} sm={6}>
-                          <Card.Text>
-                            {`Marks: ${q.marks}`}
-                          </Card.Text>
-                        </Col>
-                        <Col xs={12} sm={6}>
-                          <Card.Text>
-                            {`Difficulty: ${q.difficulty_level}`}
-                          </Card.Text>
-                        </Col>
-                        
-                        <Col xs={12} sm={6}>
-                          <Card.Text>
-                            {`Course: ${q.course_name}`}
-                          </Card.Text>
-                        </Col>
-                        <Col xs={12} sm={6}>
-                          <Card.Text>
-                            {`Module: ${q.module_name}`}
-                          </Card.Text>
-                        </Col>
-                        {/* If options are available, map them here */}
-                        {q.options?.map((option, idx) => (
-                          <Col key={idx} xs={12} sm={6}>
-                            <Card.Text>{`Option ${idx + 1}: ${option.text}`}</Card.Text>
-                            {option.image_url && (
-                              <img
-                                src={`http://localhost:5000/${option.image_url}`}
-                                alt={`Option ${idx + 1}`}
-                                style={{ maxWidth: '100%', marginTop: '5px' }}
-                              />
-                            )}
-                          </Col>
-                        ))}
-                      </Row>
-                    </Card.Body>
-                    <Card.Footer>
-                      <Button
-                        variant="warning"
-                        size="sm"
-                        onClick={() => handleEdit(q)}
-                        className="me-2"
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDelete(q.subj_question_id, 'sub')}
-                      >
-                        Delete
-                      </Button>
-                    </Card.Footer>
-                  </StyledCard>
-                </Col>
-              ))
-              
+          questions.map((q, index) => (
+            <Col key={q.subj_question_id} xs={12} sm={6} md={4} lg={3}>
+              <StyledCard>
+                {q.image_url && (
+                  <QuestionImage
+                    src={`http://localhost:5000/${q.image_url}`}
+                    alt="Question"
+                    onClick={() => handleImageClick(`http://localhost:5000/${q.image_url}`)}
+                  />
+                )}
+                <Card.Body>
+                  <Card.Title className="text-center">{q.question_text}</Card.Title>
+                  <Row>
+                    <Col xs={12}>
+                      <Card.Text>{`Marks: ${q.marks}`}</Card.Text>
+                    </Col>
+                    <Col xs={12}>
+                      <Card.Text>{`Difficulty: ${q.difficulty_level}`}</Card.Text>
+                    </Col>
+                    <Col xs={12}>
+                      <Card.Text>{`Course: ${q.course_name}`}</Card.Text>
+                    </Col>
+                    <Col xs={12}>
+                      <Card.Text>{`Module: ${q.module_name}`}</Card.Text>
+                    </Col>
+                    <Col xs={12}>
+                      <Card.Text>{`Notes: ${q.notes || "N/A"}`}</Card.Text>
+                    </Col>
+                  </Row>
+                </Card.Body>
+                <Card.Footer>
+                  <Button
+                    variant="warning"
+                    size="sm"
+                    onClick={() => handleEdit(q)}
+                    className="me-2"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleDelete(q.subj_question_id, 'sub')}
+                  >
+                    Delete
+                  </Button>
+                </Card.Footer>
+              </StyledCard>
+            </Col>
+          ))
         )}
       </Row>
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-  <Modal.Header closeButton>
-    <Modal.Title>Edit Question</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    <Form onSubmit={handleSubmit(handleSave)}>
-      <StyledFormControl
-        type="text"
-        placeholder="Question"
-        {...register("question_text")}
-        isInvalid={!!errors.question_text}
-      />
-      {errors.question_text && <div className="invalid-feedback">{errors.question_text.message}</div>}
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Question</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmit(handleSave)}>
+            <Form.Group>
+              <Form.Label>Question</Form.Label>
+              <StyledFormControl
+                as="textarea"
+                rows={3}
+                {...register("question_text")}
+                isInvalid={!!errors.question_text}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.question_text?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
 
-      <StyledFormControl
-        type="text"
-        placeholder="Marks"
-        {...register("marks")}
-        isInvalid={!!errors.marks}
-      />
-      {errors.marks && <div className="invalid-feedback">{errors.marks.message}</div>}
+            <Form.Group>
+              <Form.Label>Marks</Form.Label>
+              <StyledFormControl
+                type="number"
+                {...register("marks", { valueAsNumber: true })}
+                isInvalid={!!errors.marks}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.marks?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
 
-      <StyledFormControl
-        type="text"
-        placeholder="Notes"
-        {...register("notes")}
-        isInvalid={!!errors.notes}
-      />
-      {errors.notes && <div className="invalid-feedback">{errors.notes.message}</div>}
+            <Form.Group>
+              <Form.Label>Difficulty Level</Form.Label>
+              <StyledFormControl
+                type="text"
+                {...register("difficulty_level")}
+                isInvalid={!!errors.difficulty_level}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.difficulty_level?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
 
-      <StyledFormControl
-        type="text"
-        placeholder="Course"
-        {...register("course_name")}
-        isInvalid={!!errors.course_name}
-      />
-      {errors.course_name && <div className="invalid-feedback">{errors.course_name.message}</div>}
+            <Form.Group>
+              <Form.Label>Notes</Form.Label>
+              <StyledFormControl
+                as="textarea"
+                rows={3}
+                {...register("notes")}
+                isInvalid={!!errors.notes}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.notes?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
 
-      <StyledFormControl
-        type="text"
-        placeholder="Module"
-        {...register("module_name")}
-        isInvalid={!!errors.module_name}
-      />
-      {errors.module_name && <div className="invalid-feedback">{errors.module_name.message}</div>}
+            <Form.Group>
+              <Form.Label>Course</Form.Label>
+              <Form.Select
+                {...register("course_name")}
+                isInvalid={!!errors.course_name}
+              >
+                {courses.map((course, index) => (
+                  <option key={index} value={course.course_name}>
+                    {course.course_name}
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Control.Feedback type="invalid">
+                {errors.course_name?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
 
-     
+            <Form.Group>
+              <Form.Label>Module</Form.Label>
+              <Form.Select
+                {...register("module_name")}
+                isInvalid={!!errors.module_name}
+              >
+                {modules.map((module, index) => (
+                  <option key={index} value={module.module_name}>
+                    {module.module_name}
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Control.Feedback type="invalid">
+                {errors.module_name?.message}
+              </Form.Control.Feedback>
+            </Form.Group>
 
-      <StyledFormControl
-        type="text"
-        placeholder="Difficulty"
-        {...register("difficulty_level")}
-        isInvalid={!!errors.difficulty_level}
-      />
-      {errors.difficulty_level && <div className="invalid-feedback">{errors.difficulty_level.message}</div>}
+            <div className="d-flex justify-content-end mt-4">
+              <Button variant="secondary" onClick={() => setShowModal(false)} className="me-2">
+                Cancel
+              </Button>
+              <Button variant="primary" type="submit">
+                Save Changes
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
 
-      <Button type="submit" variant="primary" className="mt-3">
-        Save
-      </Button>
-    </Form>
-  </Modal.Body>
-</Modal>
-
+      <Modal show={!!enlargedImage} onHide={handleCloseEnlargedImage} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Enlarged Image</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <img src={enlargedImage} alt="Enlarged" style={{ width: '100%' }} />
+        </Modal.Body>
+      </Modal>
 
       <StyledPagination>{generatePaginationItems()}</StyledPagination>
     </Container>
   );
 };
 
-export default SubQuestionCard;
+export default SubjQuestionCard;

@@ -1,11 +1,11 @@
 import React from "react";
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom"; 
 import styled from "styled-components";
 import { FaSun, FaMoon } from 'react-icons/fa';
 
 const StyledNavbar = styled(Navbar)`
-  background-color: ${({ isDarkMode }) => (isDarkMode ? '#1e1e2f' : '#2c3e50')}; /* Dark background */
+  background-color: ${({ isDarkMode }) => (isDarkMode ? '#1e1e2f' : '#2c3e50')};
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
   padding: 1rem;
   transition: background-color 0.3s, box-shadow 0.3s;
@@ -14,7 +14,7 @@ const StyledNavbar = styled(Navbar)`
   z-index: 1000;
 
   &:hover {
-    background-color: ${({ isDarkMode }) => (isDarkMode ? '#2c3e50' : '#34495e')}; /* Slightly lighter on hover */
+    background-color: ${({ isDarkMode }) => (isDarkMode ? '#2c3e50' : '#34495e')};
     box-shadow: 0 6px 35px rgba(0, 0, 0, 0.25);
   }
 
@@ -25,7 +25,7 @@ const StyledNavbar = styled(Navbar)`
     transition: color 0.3s;
 
     &:hover {
-      color: #f39c12; /* Highlight brand on hover */
+      color: #f39c12;
     }
   }
 
@@ -36,7 +36,7 @@ const StyledNavbar = styled(Navbar)`
     transition: color 0.3s, transform 0.2s;
 
     &:hover {
-      color: #f39c12; /* Highlight links on hover */
+      color: #f39c12;
       transform: translateY(-2px);
     }
   }
@@ -46,7 +46,7 @@ const StyledNavbar = styled(Navbar)`
     color: ${({ isDarkMode }) => (isDarkMode ? '#bdc3c7' : '#ffffff')};
     transition: background-color 0.3s, color 0.3s;
     padding: 0.5rem 1rem;
-    border-radius: 30px; /* Rounded corners */
+    border-radius: 30px;
     font-size: 1rem;
 
     &:hover {
@@ -69,7 +69,7 @@ const StyledNavbar = styled(Navbar)`
 `;
 
 const NavbarComponent = ({ toggleDarkMode, isDarkMode,setIsLoggedIn }) => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate(); 
 
   const handleLogout = () => {
   

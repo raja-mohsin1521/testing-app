@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { z } from "zod";
-import { Button, Form, Alert } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import useQuestion from "../Hooks/useQustions";
+import Alert from "./Alert";
+
 
 const questionSchema = z.object({
   questionText: z.string().min(5, "Question text must be at least 5 characters long"),
@@ -68,6 +70,10 @@ const ErrorText = styled.div`
 
 const SubQuestionForm = () => {
   const { addSubjectiveQuestion, fetchCourses, fetchModules } = useQuestion();
+
+  const [showAlert, setShowAlert] = useState(true);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [statusCode, setStatusCode] = useState(0);
   const [courses, setCourses] = useState([]);
   const [modules, setModules] = useState([]);
   const [questions, setQuestions] = useState([{
@@ -81,7 +87,7 @@ const SubQuestionForm = () => {
   }]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [errors, setErrors] = useState({});
-  const [showAlert, setShowAlert] = useState(false);
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,7 +98,7 @@ const SubQuestionForm = () => {
 
     fetchData();
   }, []);
-
+  const getToken = () => localStorage.getItem('token');
   const handleChange = async (e) => {
     const { name, value, files } = e.target;
     const updatedQuestions = [...questions];
@@ -139,10 +145,20 @@ const SubQuestionForm = () => {
         formData.append("image", currentQuestion.image);
       }
 
-      formData.append("token", "14");
+      formData.append("token", getToken());
 
       
-      await addSubjectiveQuestion(formData);
+      const data = await addSubjectiveQuestion(formData);
+console.log('data', data)
+      setAlertMessage(data.error)
+      setStatusCode(data.status)
+      setShowAlert(false);
+
+      // Hide the alert after 3 seconds
+      setTimeout(() => {
+        setShowAlert(true);
+      }, 3000);
+    
       setQuestions([{
         questionText: "",
         notes: "",
@@ -155,8 +171,7 @@ const SubQuestionForm = () => {
       setErrors({});
       setCurrentQuestionIndex(0);
 
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
+      
     } catch (err) {
       console.error("Error submitting form:", err);
     }
@@ -263,11 +278,7 @@ const SubQuestionForm = () => {
           {errors.marks && <ErrorText>{errors.marks}</ErrorText>}
         </StyledFormGroup>
 
-        {showAlert && (
-          <Alert variant="success" onClose={() => setShowAlert(false)} dismissible>
-            Question added successfully!
-          </Alert>
-        )}
+        {!showAlert? <Alert alertMessage={alertMessage} statusCode={statusCode} />:<></>}
 
         <StyledButton type="submit">Submit</StyledButton>
       </StyledForm>

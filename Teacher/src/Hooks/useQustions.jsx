@@ -8,7 +8,7 @@ const useQuestion = () => {
   const { data } = useStore();
 
   const url = 'http://localhost:5000/teacher';
-
+  const getToken = () => localStorage.getItem('token');
   const fetchCourses = async () => {
     try {
       const response = await axios.get(`${url}/courses`);
@@ -19,6 +19,7 @@ const useQuestion = () => {
     }
   };
   const fetchModules = async (courseId) => {
+    console.log('co', courseId)
     try {
       const response = await axios.get(`${url}/courses/${courseId}/modules`);
       return response.data.modules;  
@@ -27,13 +28,23 @@ const useQuestion = () => {
       throw err;  
     }
   };
-  
-  const getObjectiveQuestionsWithoutImages = async ( currentpage) => {
-    const teacher_id=14
+  const fetchSpecificModule = async (moduleId) => {
+    try {
+      const response = await axios.get(`${url}/courses/modules/${moduleId}`);
+      return response.data.modules;  
+    } catch (err) {
+      console.error(`Error fetching module for ${courseId}:`, err);
+      throw err;  
+    }
+  };
+
+  const getObjectiveQuestionsWithoutImages = async ( currentpage,course,difficulty, sortBy, sortOrder) => {
+    console.log('firstaaaaaaaaaaaaaaaaaa', course, sortBy, sortOrder)
+    const teacher_id=await getToken()
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${url}/questions/objective/without-images`, { teacher_id, currentpage });
+      const response = await axios.post(`${url}/questions/objective/without-images`, { teacher_id, currentpage,course,difficulty, sortBy, sortOrder });
       const { objective, total } = response.data;
       
       return { objective, total };
@@ -44,17 +55,17 @@ const useQuestion = () => {
     }
   };
 
-  const getSubjectiveQuestionsWithoutImages = async (currentpage=1) => {
-    const teacher_id=14
+  const getSubjectiveQuestionsWithoutImages = async (currentpage,course,difficulty, sortBy, sortOrder) => {
+    const teacher_id=await getToken()
     setLoading(true);
     setError(null);
     try {
      
-      const response = await axios.post(`${url}/questions/subjective/without-images`, { teacher_id, currentpage });
-     
+      const response = await axios.post(`${url}/questions/subjective/without-images`, { teacher_id, currentpage,currentpage,course,difficulty, sortBy, sortOrder });
+     console.log('first', response)
       const { subjective, total } = response.data;
-      
       return { subjective, total };
+      
     } catch (err) {
       setError(err.response?.data || 'Error fetching subjective questions without images');
     } finally {
@@ -62,12 +73,12 @@ const useQuestion = () => {
     }
   };
 
-  const getObjectiveQuestionsWithImages = async ( page = 1) => {
+  const getObjectiveQuestionsWithImages = async ( page = 1,course,difficulty, sortBy, sortOrder) => {
     setLoading(true);
     setError(null);
-    let teacher_id=14;
+    const teacher_id=await getToken()
     try {
-      const response = await axios.post(`${url}/questions/objective/with-images`, { teacher_id, page });
+      const response = await axios.post(`${url}/questions/objective/with-images`, { teacher_id, page ,course,difficulty, sortBy, sortOrder});
       const {  objective, total } = response.data;
       
       return {  objective, total};
@@ -78,12 +89,12 @@ const useQuestion = () => {
     }
   };
 
-  const getSubjectiveQuestionsWithImages = async ( page = 1) => {
+  const getSubjectiveQuestionsWithImages = async ( page = 1,course,difficulty, sortBy, sortOrder) => {
     setLoading(true);
     setError(null);
-    const teacher_id=14
+    const teacher_id=await getToken()
     try {
-      const response = await axios.post(`${url}/questions/subjective/with-images`, {teacher_id , page });
+      const response = await axios.post(`${url}/questions/subjective/with-images`, {teacher_id , page,course,difficulty, sortBy, sortOrder });
       const { subjective, total} = response.data;
       return { subjective, total };
     } catch (err) {
@@ -98,10 +109,32 @@ const useQuestion = () => {
       const response = await axios.post(`${url}/questions/add/objective`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return response.data;
+     
+      console.log('response', response)
+
+      return {error:response.data,status:response.status}
+      
     } catch (error) {
       console.error('Error uploading question:', error);
-      throw error;
+     
+      return {error:error.response.data,status:error.response.status};
+    }
+  };
+
+  const editObjQuestion = async (formData) => {
+    try {
+      const response = await axios.post(`${url}/questions/edit/objective`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+     
+      console.log('response', response)
+
+      return {error:response.data,status:response.status}
+      
+    } catch (error) {
+      console.error('Error uploading question:', error);
+     
+      return {error:error.response.data,status:error.response.status};
     }
   };
 
@@ -110,22 +143,42 @@ const useQuestion = () => {
       const response = await axios.post(`${url}/questions/add/subjective`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return response.data;
+      getObjectiveQuestionsWithoutImages('1')
+      getSubjectiveQuestionsWithoutImages('1')
+      getObjectiveQuestionsWithImages('1')
+      getSubjectiveQuestionsWithImages('1')
+      console.log('first', response.data)
+      return {error:response.data,status:response.status}
     } catch (error) {
       console.error('Error uploading subjective question:', error);
-      throw error;
+      return {error:error.response.data,status:error.response.status};
     }
   };
 
-  const updateQuestion = async (teacher_id, updatedData) => {
+  const updateObjQuestion = async ( updatedData) => {
     setLoading(true);
     setError(null);
     try {
-      await axios.put(`${url}/questions/update`, {
-        teacher_id,
-        ...updatedData,
+     const a= await axios.post(`${url}//questions/edit/objective`, {
+      updatedData,
       });
-      await fetchQuestions(teacher_id);
+    clo(aaaaa)
+    } catch (err) {
+      setError(err.response?.data || 'Error updating question');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const updateSubQuestion = async ( updatedData) => {
+    setLoading(true);
+    setError(null);
+    try {
+     const a= await axios.post(`${url}//questions/edit/subjective`, {
+      updatedData,
+      });
+    clo(aaaaa)
     } catch (err) {
       setError(err.response?.data || 'Error updating question');
     } finally {
@@ -138,7 +191,7 @@ const useQuestion = () => {
       setError("Question type ('sub' or 'obj') is required.");
       return;
     }
-  const teacher_id=14;
+  const teacher_id=getToken();
     setLoading(true);
     setError(null);
   
@@ -155,7 +208,7 @@ const useQuestion = () => {
         err.response?.data || "An error occurred while deleting the question.";
       setError(errorMessage);
     } finally {
-      // Ensure loading state is cleared
+      
       setLoading(false);
     }
   };
@@ -165,8 +218,11 @@ const useQuestion = () => {
     setError(null);
     console.log('data', data)
     try {
-      const response = await axios.post(`${url}/questions/import/objective`, { teacher_id:14, data });
-      
+      const response = await axios.post(`${url}/questions/import/objective`, { teacher_id:getToken(), data });
+      getObjectiveQuestionsWithoutImages('1')
+      getSubjectiveQuestionsWithoutImages('1')
+      getObjectiveQuestionsWithImages('1')
+      getSubjectiveQuestionsWithImages('1')
     } catch (err) {
       setError(err.response?.data || 'Error importing objective questions');
     } finally {
@@ -179,8 +235,11 @@ const useQuestion = () => {
     setError(null);
     console.log('data', data)
     try {
-      const response = await axios.post(`${url}/questions/import/subjective`, { teacher_id: 14, data });
-      
+      const response = await axios.post(`${url}/questions/import/subjective`, { teacher_id: getToken(), data });
+      getObjectiveQuestionsWithoutImages('1')
+      getSubjectiveQuestionsWithoutImages('1')
+      getObjectiveQuestionsWithImages('1')
+      getSubjectiveQuestionsWithImages('1')
     } catch (err) {
       setError(err.response?.data || 'Error importing subjective questions');
     } finally {
@@ -203,13 +262,16 @@ const useQuestion = () => {
     data,
     loading,
     error,
+    editObjQuestion,
+    fetchSpecificModule,
     getObjectiveQuestionsWithoutImages,
     getSubjectiveQuestionsWithoutImages,
     getObjectiveQuestionsWithImages,
     getSubjectiveQuestionsWithImages,
     addQuestion,
     addSubjectiveQuestion,
-    updateQuestion,
+    updateObjQuestion,
+    updateSubQuestion,
     deleteQuestion,
     importObj,
     importSub,

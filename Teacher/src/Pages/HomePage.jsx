@@ -55,8 +55,13 @@ const StyledCard = styled.div`
 const HomePage = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { getAddedQuestionsCount, getRequiredQuestionsCount,getTeacherDetails } = useDashboard();
-  const [addedQuestionsCount, setAddedQuestionsCount] = useState(0);
-  const [requiredQuestionsCount, setRequiredQuestionsCount] = useState(0);
+  const [addedQuestionsCount, setAddedQuestionsCount] = useState({
+    objective_questions_count: 0,
+    subjective_questions_count: 0,
+  });
+  
+  const [requiredQuestionsCount, setRequiredQuestionsCount] = useState({  objective_questions_count: 0,
+    subjective_questions_count: 0,}||null);
   const [teacherDetails, setTeacherDetails] = useState({
 
 
@@ -70,10 +75,11 @@ const HomePage = () => {
       try {
         const addedCount = await getAddedQuestionsCount();
         const requiredCount = await getRequiredQuestionsCount();
-        const teacherDetailsData = await getTeacherDetails(); // Changed name here
-        setAddedQuestionsCount(addedCount.added_questions_count);
-        setRequiredQuestionsCount(requiredCount.required_questions);
-        setTeacherDetails(teacherDetailsData); // Set teacher details
+        const teacherDetailsData = await getTeacherDetails(); 
+        console.log('first', addedCount)
+        setAddedQuestionsCount(addedCount);
+        setRequiredQuestionsCount(requiredCount);
+        setTeacherDetails(teacherDetailsData); 
         
       } catch (err) {
         console.error("Error fetching counts:", err);
@@ -87,14 +93,24 @@ const HomePage = () => {
      
       <Row className="justify-content-center">
         {[
-          { title: "Added Questions", count: addedQuestionsCount },
-          { title: "Required Questions", count: requiredQuestionsCount },
-          { title: "Remaining Questions", count: requiredQuestionsCount-addedQuestionsCount|| 0  }, 
-        ].map(({ title, count }, index) => (
+          { title: "Added Questions", countObj: addedQuestionsCount.objective_questions_count , countSub:  addedQuestionsCount.subjective_questions_count},
+          { title: "Required Questions", countObj: requiredQuestionsCount.required_objective_questions , countSub:  requiredQuestionsCount.required_subjective_questions },
+          { title: "Remaining Questions", countObj: requiredQuestionsCount.required_objective_questions-addedQuestionsCount.objective_questions_count||0 , countSub:  requiredQuestionsCount.required_subjective_questions-addedQuestionsCount.subjective_questions_count||0  }, 
+        ].map(({ title, countObj, countSub}, index) => (
           <Col md={4} key={index}>
             <StyledCard isDarkMode={isDarkMode}>
-              <h4>{title}</h4>
-              <h1 className="display-4">{count}</h1>
+              <h3>{title}</h3>
+              <Row className="mt-4">
+                <Col xs={6}>
+                <h5>Objective</h5>
+                <h1 className="display-4">{countObj}</h1>
+                </Col>
+                <Col xs={6}>
+                <h5>Subjective</h5>
+                <h1 className="display-4">{countSub}</h1>
+                </Col>
+              </Row>
+              
             </StyledCard>
           </Col>
         ))}
