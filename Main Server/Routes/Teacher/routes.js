@@ -13,7 +13,8 @@ const {
 const { 
   addObjQuestion,
   addSubjectiveQuestion,
-  updateQuestion,
+  editObjQuestion,
+  editSubjQuestion,
   getObjectiveQuestionsWithoutImages,
   getSubjectiveQuestionsWithoutImages,
   getObjectiveQuestionsWithImages,
@@ -22,7 +23,8 @@ const {
   importObj,
   importSub,
   getAllCourses,
-  getModulesForCourse
+  getModulesForCourse,
+  getModuleDetailsByModuleId
 } = require('../../Controller/Teacher/questionsController');
 
 const router = express.Router();
@@ -31,11 +33,11 @@ const router = express.Router();
 router.post("/auth/login", loginTeacher);      
 router.put("/auth/update", updateTeacher);  
 
-router.get("/dashboard/added-questions", getAddedQuestionsCount);  
-router.get("/dashboard/required-questions", getRequiredQuestionsCount);  
-router.get("/dashboard/teacher-details", getTeacherDetails);  
+router.post("/dashboard/added-questions", getAddedQuestionsCount);  
+router.post("/dashboard/required-questions", getRequiredQuestionsCount);  
+router.post("/dashboard/teacher-details", getTeacherDetails);  
 
-// Questions routes
+
 router.post("/questions/add/objective", addObjQuestion);  
 router.post("/questions/add/subjective", addSubjectiveQuestion);  
 router.post("/questions/objective/without-images", getObjectiveQuestionsWithoutImages); 
@@ -43,13 +45,14 @@ router.post("/questions/subjective/without-images", getSubjectiveQuestionsWithou
 router.post("/questions/objective/with-images", getObjectiveQuestionsWithImages); 
 router.post("/questions/subjective/with-images", getSubjectiveQuestionsWithImages);
 router.delete("/questions/delete", deleteQuestion);  
-router.put("/questions/:id", updateQuestion);
+router.post("/questions/edit/objective", editObjQuestion);  
+router.post("/questions/edit/subjective", editSubjQuestion);
 
-// Import routes
 router.post("/questions/import/objective", importObj);
 router.post("/questions/import/subjective", importSub);
 
 
 router.get("/courses", getAllCourses);
 router.get("/courses/:courseId/modules", getModulesForCourse);
+router.get("/courses/modules/:moduleId", getModuleDetailsByModuleId);
 module.exports = router;

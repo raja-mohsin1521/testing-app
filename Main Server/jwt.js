@@ -1,26 +1,57 @@
 const jwt = require("jsonwebtoken");
 
+// Use a secret key from environment variables or fallback to a default value
 const secretKey = process.env.JWT_SECRET || "yourSecretKey";
 
-// Generate a JWT token for the user
+// Function to generate a JWT token for the user
 const generateToken = (user) => {
-   
-  return jwt.sign(
-      user, 
-    secretKey,
-    { expiresIn: "999y" }  // You may want to adjust this expiration time
-  );
+  // Log the user object to debug the input
+  console.log("Generating token for user:", user);
+
+  const payload = {
+    teacher_id: user.teacher_id, // Ensure user.id exists
+    email: user.email,
+  };
+
+  // Sign the token without expiration
+  const token = jwt.sign(payload, secretKey);
+  console.log("Generated Token:", token); // Log the token for debugging
+  return token;
 };
 
-// Verify the JWT token and extract the payload
+// Function to verify a JWT token and extract the payload
 const verifyToken = (token) => {
   try {
-    // jwt.verify() will verify the token's signature and return the decoded payload
-    return jwt.verify(token, secretKey);
+    console.log("Verifying token:", token); // Log the token for debugging
+    // jwt.verify() verifies the token and returns the decoded payload
+    const decoded = jwt.verify(token, secretKey);
+    console.log("Decoded Payload:", decoded); // Log the decoded payload
+    return decoded;
   } catch (err) {
-    throw new Error("Invalid or expired token");
+    if (err.name === "JsonWebTokenError") {
+      throw new Error("Invalid token");
+    } else {
+      throw new Error("An error occurred during token verification");
+    }
   }
 };
+
+// Example usage (for testing purposes only)
+if (require.main === module) {
+  const testUser = {
+    id: 123, // Ensure this field is present
+    email: "john12@example.comm",
+  };
+
+  // Generate and verify a token
+  try {
+    const token = generateToken(testUser);
+    const decoded = verifyToken(token);
+    console.log("Verified Payload:", decoded);
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
 
 module.exports = {
   generateToken,

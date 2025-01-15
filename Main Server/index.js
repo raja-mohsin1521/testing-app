@@ -1,4 +1,5 @@
 const express = require("express");
+const createTables = require('./db_Connection/createTable');
 const dotenv = require("dotenv");
 const path = require("path");
 
@@ -14,7 +15,7 @@ const adminTestRoutes = require('./Routes/Admin/adminTestRoutes');
 const adminScheduleTestRoutes = require('./Routes/Admin/adminScheduleTestRoutes');
 
 dotenv.config();
-
+createTables()
 const app = express();
 
 app.use(cors({
@@ -59,5 +60,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+
 });
